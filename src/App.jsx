@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import EmployeeHomepage from './components/employee/EmployeeHomepage';
 import EmployeeLoginModal from './components/employee/EmployeeLoginModal';
 import EmployeeRegisterModal from './components/employee/EmployeeRegisterModal';
@@ -7,6 +8,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isEmployeeLoginOpen, setIsEmployeeLoginOpen] = useState(false);
   const [isEmployeeRegisterOpen, setIsEmployeeRegisterOpen] = useState(false);
+  const navigate = useNavigate();
 
   const openRegister = () => {
     setIsEmployeeLoginOpen(false);
@@ -22,15 +24,15 @@ function App() {
     setIsLoggedIn(true);
     setIsEmployeeLoginOpen(false);
     setIsEmployeeRegisterOpen(false);
+    navigate('/employee');
   };
 
-  if (isLoggedIn) {
-    return <EmployeeHomepage />;
-  }
-
   return (
-    <div className="min-h-screen bg-white font-sans text-palette-900 flex flex-col selection:bg-palette-200 selection:text-palette-900">
-      {/* Navbar */}
+    <>
+      <Routes>
+        <Route path="/" element={
+          <div className="min-h-screen bg-white font-sans text-palette-900 flex flex-col selection:bg-palette-200 selection:text-palette-900">
+            {/* Navbar */}
       <nav className="w-full px-8 py-6 flex justify-end items-center gap-4 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-palette-100 shadow-sm">
         <button 
           onClick={() => setIsEmployeeLoginOpen(true)}
@@ -84,6 +86,14 @@ function App() {
           </div>
         </div>
       </main>
+          </div>
+        } />
+        
+        <Route 
+          path="/employee" 
+          element={isLoggedIn ? <EmployeeHomepage /> : <Navigate to="/" />} 
+        />
+      </Routes>
 
       <EmployeeLoginModal 
         isOpen={isEmployeeLoginOpen} 
@@ -97,7 +107,7 @@ function App() {
         onLoginClick={openLogin}
         onLoginSuccess={handleLoginSuccess}
       />
-    </div>
+    </>
   )
 }
 
