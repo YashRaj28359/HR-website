@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import EmployeeHomepage from './components/employee/EmployeeHomepage';
+import EmployeeProfile from './components/employee/EmployeeProfile';
 import EmployeeLoginModal from './components/employee/EmployeeLoginModal';
 import EmployeeRegisterModal from './components/employee/EmployeeRegisterModal';
 
@@ -92,6 +93,11 @@ function App() {
         <Route 
           path="/employee" 
           element={isLoggedIn ? <EmployeeHomepage /> : <Navigate to="/" />} 
+        />
+
+        <Route 
+          path="/profile" 
+          element={isLoggedIn ? <EmployeeProfile /> : <Navigate to="/" />} 
         />
       </Routes>
 

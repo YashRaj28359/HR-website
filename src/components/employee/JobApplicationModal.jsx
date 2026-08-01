@@ -385,67 +385,81 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
     </div>
   );
 
-  const Step6Review = () => (
-    <div className="space-y-6 animate-fade-in max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-sm">
-      <h3 className="text-xl font-bold text-gray-900 mb-4">Review Your Application</h3>
-      
-      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
-        <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Basic Details</h4>
-        <p><span className="font-semibold text-gray-600">Name:</span> {formData.firstName} {formData.lastName}</p>
-        <p><span className="font-semibold text-gray-600">Phone:</span> {formData.phone}</p>
-        <p><span className="font-semibold text-gray-600">Email:</span> {formData.email}</p>
-      </div>
+  const Step6Review = () => {
+    const p = formData.professionalDetails || {};
+    return (
+      <div className="space-y-6 animate-fade-in max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-sm bg-blue-50/30 p-4 rounded-xl border border-blue-100">
+        <div className="text-center mb-6">
+          <h3 className="text-2xl font-black text-palette-900 mb-2">Final Review (Page 6)</h3>
+          <p className="text-gray-500">Please review all the details you filled in before submitting.</p>
+        </div>
+        
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-2">
+          <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Basic Details</h4>
+          <p><span className="font-semibold text-gray-600">Name:</span> {(formData.firstName || formData.lastName) ? `${formData.firstName || ''} ${formData.lastName || ''}`.trim() : 'N/A'}</p>
+          <p><span className="font-semibold text-gray-600">Phone:</span> {formData.phone || 'N/A'}</p>
+          <p><span className="font-semibold text-gray-600">Email:</span> {formData.email || 'N/A'}</p>
+        </div>
 
-      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
-        <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Education</h4>
-        {formData.qualifications.map((q, i) => (
-          <p key={i}>• {q.stream || 'N/A'} from {q.school || 'N/A'} ({q.startYear}-{q.endYear}) - {q.percentage}</p>
-        ))}
-      </div>
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-2">
+          <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Education</h4>
+          {(!formData.qualifications || formData.qualifications.length === 0) ? (
+            <p className="text-gray-500 italic">N/A</p>
+          ) : (
+            formData.qualifications.map((q, i) => (
+              <p key={i}>• {q.stream || 'N/A'} from {q.school || 'N/A'} ({q.startYear || 'N/A'}-{q.endYear || 'N/A'}) - {q.percentage || 'N/A'}</p>
+            ))
+          )}
+        </div>
 
-      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
-        <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Work Experience</h4>
-        {formData.isFresher ? (
-          <p>Fresher</p>
-        ) : (
-          formData.experience.map((e, i) => (
-            <div key={i} className="mb-4">
-              <p className="font-bold text-palette-900">{e.companyName || 'N/A'}</p>
-              <div className="pl-3 mt-1 border-l-2 border-gray-200 space-y-2">
-                {e.roles && e.roles.map((r, rIdx) => (
-                  <div key={rIdx}>
-                    <p className="font-semibold text-gray-700">• {r.jobTitle || 'N/A'}</p>
-                    <p className="text-gray-600 text-xs pl-3">({r.joiningDate || 'N/A'} to {r.currentCompany ? 'Present' : (r.leavingDate || 'N/A')})</p>
-                  </div>
-                ))}
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-2">
+          <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Work Experience</h4>
+          {formData.isFresher ? (
+            <p className="font-medium text-palette-900">Fresher (No Experience)</p>
+          ) : (!formData.experience || formData.experience.length === 0) ? (
+            <p className="text-gray-500 italic">N/A</p>
+          ) : (
+            formData.experience.map((e, i) => (
+              <div key={i} className="mb-4 last:mb-0">
+                <p className="font-bold text-palette-900">{e.companyName || 'N/A'}</p>
+                <div className="pl-3 mt-1 border-l-2 border-gray-200 space-y-2">
+                  {e.roles && e.roles.length > 0 ? e.roles.map((r, rIdx) => (
+                    <div key={rIdx}>
+                      <p className="font-semibold text-gray-700">• {r.jobTitle || 'N/A'}</p>
+                      <p className="text-gray-500 text-xs pl-3">({r.joiningDate || 'N/A'} to {r.currentCompany ? 'Present' : (r.leavingDate || 'N/A')})</p>
+                    </div>
+                  )) : (
+                    <p className="text-gray-500 italic text-xs">Roles: N/A</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
-        <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Professional Details</h4>
-        <div className="grid grid-cols-2 gap-2">
-          <p><span className="font-semibold text-gray-600">Designation:</span> {formData.professionalDetails.currentDesignation || 'N/A'}</p>
-          <p><span className="font-semibold text-gray-600">Current Salary:</span> {formData.professionalDetails.currentSalary || 'N/A'}</p>
-          <p><span className="font-semibold text-gray-600">Expected Salary:</span> {formData.professionalDetails.expectedSalary || 'N/A'}</p>
-          <p><span className="font-semibold text-gray-600">Current Location:</span> {formData.professionalDetails.currentLocation || 'N/A'}</p>
-          <p className="col-span-2"><span className="font-semibold text-gray-600">Preferred Locations:</span> {formData.professionalDetails.preferredLocations || 'N/A'}</p>
-          <p className="col-span-2"><span className="font-semibold text-gray-600">Skills:</span> {formData.professionalDetails.skills || 'N/A'}</p>
-          <p className="col-span-2"><span className="font-semibold text-gray-600">LinkedIn:</span> {formData.professionalDetails.linkedinUrl || 'N/A'}</p>
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-2">
+          <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Professional Details</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <p><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">Designation</span> {p.currentDesignation || 'N/A'}</p>
+            <p><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">Current Salary</span> {p.currentSalary || 'N/A'}</p>
+            <p><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">Expected Salary</span> {p.expectedSalary || 'N/A'}</p>
+            <p><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">Current Location</span> {p.currentLocation || 'N/A'}</p>
+            <p className="col-span-2"><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">Preferred Locations</span> {p.preferredLocations || 'N/A'}</p>
+            <p className="col-span-2"><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">Skills</span> {p.skills || 'N/A'}</p>
+            <p className="col-span-2"><span className="font-semibold text-gray-600 block text-xs uppercase tracking-wider mb-1">LinkedIn</span> {p.linkedinUrl || 'N/A'}</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-2">
+          <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Documents</h4>
+          <p className="flex items-center gap-2 text-green-700 font-bold bg-green-50 p-2 rounded-lg w-max">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+            Resume Ready
+          </p>
         </div>
       </div>
-
-      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
-        <h4 className="font-bold text-gray-800 border-b pb-2 mb-2">Documents</h4>
-        <p className="flex items-center gap-2 text-green-700 font-medium">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-          Resume Uploaded
-        </p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -459,7 +473,9 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
         {!isSubmitted && (
           <div className="p-6 border-b border-gray-100">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-black text-gray-900">Create Profile & Apply</h2>
+              <h2 className="text-2xl font-black text-gray-900">
+                {currentStep === 6 ? 'Step 6: Review Your Details' : `Step ${currentStep}: Create Profile & Apply`}
+              </h2>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -525,7 +541,7 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
                 onClick={handleNext}
                 className="px-8 py-2.5 bg-palette-900 text-white font-bold rounded-full shadow-lg shadow-palette-900/30 hover:bg-palette-400 hover:shadow-palette-400/40 transition-all duration-300 transform hover:-translate-y-0.5"
               >
-                Save & Continue
+                {currentStep === totalSteps - 1 ? 'Review Application' : 'Save & Continue'}
               </button>
             ) : (
               <button 
