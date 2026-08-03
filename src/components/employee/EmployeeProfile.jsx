@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 const EmployeeProfile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('basic');
-  const [isEditing, setIsEditing] = useState(false);
+  const [expandedEduIndex, setExpandedEduIndex] = useState(0);
+  const [expandedExpIndex, setExpandedExpIndex] = useState(-1);
   const [formData, setFormData] = useState({
     firstName: 'Yash Raj',
     lastName: 'Singh',
@@ -25,6 +26,8 @@ const EmployeeProfile = () => {
     }
   });
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   useEffect(() => {
     const saved = localStorage.getItem('userProfile');
     if (saved) {
@@ -34,16 +37,34 @@ const EmployeeProfile = () => {
         console.error("Failed to parse profile data");
       }
     }
+    setIsLoaded(true);
   }, []);
 
-  const handleSave = () => {
-    localStorage.setItem('userProfile', JSON.stringify(formData));
-    localStorage.setItem('hasProfile', 'true');
-    setIsEditing(false);
-  };
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('userProfile', JSON.stringify(formData));
+      localStorage.setItem('hasProfile', 'true');
+    }
+  }, [formData, isLoaded]);
 
   const p = formData.professionalDetails || {};
   const setP = (field, val) => setFormData({...formData, professionalDetails: {...p, [field]: val}});
+  const docs = formData.documents || {};
+  const setDoc = (field, val) => setFormData({...formData, documents: {...docs, [field]: val}});
+
+  const updateArray = (field, index, key, value) => {
+    const newArr = [...(formData[field] || [])];
+    newArr[index] = { ...newArr[index], [key]: value };
+    setFormData({ ...formData, [field]: newArr });
+  };
+  const addArrayItem = (field, defaultObj) => {
+    setFormData({ ...formData, [field]: [...(formData[field] || []), defaultObj] });
+  };
+  const removeArrayItem = (field, index) => {
+    const newArr = [...(formData[field] || [])];
+    newArr.splice(index, 1);
+    setFormData({ ...formData, [field]: newArr });
+  };
 
   const tabs = [
     { id: 'basic', label: 'Basic Details' },
@@ -52,6 +73,26 @@ const EmployeeProfile = () => {
     { id: 'professional', label: 'Professional Overview' },
     { id: 'documents', label: 'Documents' },
   ];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveTab(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -80% 0px' }
+    );
+
+    tabs.forEach(tab => {
+      const el = document.getElementById(tab.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [tabs]);
 
   const renderHeader = () => (
     <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col md:flex-row gap-8 items-start md:items-center">
@@ -94,10 +135,7 @@ const EmployeeProfile = () => {
               <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
               {formData.isFresher ? 'Fresher' : 'Experienced'}
             </p>
-            <p className="flex items-center gap-3 text-palette-400 font-medium cursor-pointer hover:text-palette-900 transition-colors">
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              Add availability to join
-            </p>
+
           </div>
           <div className="space-y-3 sm:border-l sm:border-gray-100 sm:pl-6">
             <p className="flex items-center gap-3">
@@ -138,9 +176,9 @@ const EmployeeProfile = () => {
           <li className="flex items-center justify-between">
             <span className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500 shadow-sm">
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
               </div>
-              Add photo
+              Add cover letter
             </span>
             <span className="text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-100 text-xs shadow-sm">↑ 5%</span>
           </li>
@@ -176,164 +214,474 @@ const EmployeeProfile = () => {
 
         <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* Left Sidebar */}
-          <aside className="w-full md:w-64 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex-shrink-0 sticky top-28">
-            <nav className="flex flex-col py-2">
-              {tabs.map(tab => (
+          <aside className="w-full md:w-64 flex-shrink-0 sticky top-28 bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-2">
+            {tabs.map(tab => (
+              <div key={tab.id} className="flex justify-between items-center group px-2">
                 <button
-                  key={tab.id}
                   onClick={() => {
-                    setActiveTab(tab.id);
-                    setIsEditing(false); // Reset edit mode when changing tabs
+                    const el = document.getElementById(tab.id);
+                    if (el) {
+                      const y = el.getBoundingClientRect().top + window.scrollY - 100;
+                      window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
                   }}
-                  className={`text-left px-6 py-4 font-bold text-sm transition-all border-l-4 ${
+                  className={`text-left py-2 text-sm transition-all w-full ${
                     activeTab === tab.id 
-                      ? 'border-palette-400 bg-palette-50 text-palette-900' 
-                      : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                      ? 'font-bold text-gray-900' 
+                      : 'font-medium text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   {tab.label}
                 </button>
-              ))}
-            </nav>
+              </div>
+            ))}
           </aside>
 
           {/* Right Content Area */}
-          <div className="flex-1 bg-white border border-gray-200 rounded-2xl shadow-sm p-8 min-h-[500px]">
-            <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {tabs.find(t => t.id === activeTab).label}
-              </h2>
-              <button 
-                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                className={`px-6 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${
-                  isEditing 
-                    ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/30' 
-                    : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-palette-400 hover:text-palette-900'
-                }`}
-              >
-                {isEditing ? (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                    Save Changes
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    Edit Details
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="flex-1 animate-fade-in space-y-6 min-h-[500px]">
 
-            {/* Tab Contents */}
-            <div className="animate-fade-in">
-              {activeTab === 'basic' && (
-                isEditing ? (
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 focus:border-palette-400 outline-none transition-all" value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 focus:border-palette-400 outline-none transition-all" value={formData.lastName || ''} onChange={e => setFormData({...formData, lastName: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 focus:border-palette-400 outline-none transition-all" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Email (Read Only)</label>
-                      <input type="text" disabled className="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed" value={formData.email || ''} />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Full Name</p>
-                      <p className="font-semibold text-gray-900 text-lg">{formData.firstName} {formData.lastName}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Email Address</p>
-                      <p className="font-semibold text-gray-900 text-lg">{formData.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Phone Number</p>
-                      <p className="font-semibold text-gray-900 text-lg">{formData.phone || 'Not Provided'}</p>
-                    </div>
-                  </div>
-                )
-              )}
-
-              {activeTab === 'professional' && (
-                isEditing ? (
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Designation</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 outline-none transition-all" value={p.currentDesignation || ''} onChange={e => setP('currentDesignation', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">LinkedIn Profile URL</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 outline-none transition-all" value={p.linkedinUrl || ''} onChange={e => setP('linkedinUrl', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Location</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 outline-none transition-all" value={p.currentLocation || ''} onChange={e => setP('currentLocation', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Salary</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 outline-none transition-all" value={p.currentSalary || ''} onChange={e => setP('currentSalary', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Expected Salary</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 outline-none transition-all" value={p.expectedSalary || ''} onChange={e => setP('expectedSalary', e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Skills</label>
-                      <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-palette-400 outline-none transition-all" placeholder="React, Node, etc." value={p.skills || ''} onChange={e => setP('skills', e.target.value)} />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-y-6 gap-x-8">
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Designation</p>
-                      <p className="font-semibold text-gray-900 text-lg">{p.currentDesignation || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Current Location</p>
-                      <p className="font-semibold text-gray-900 text-lg">{p.currentLocation || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Current Salary</p>
-                      <p className="font-semibold text-gray-900 text-lg">{p.currentSalary || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Expected Salary</p>
-                      <p className="font-semibold text-gray-900 text-lg">{p.expectedSalary || 'N/A'}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-sm text-gray-500 mb-1 font-medium">Skills</p>
-                      <p className="font-semibold text-gray-900 text-lg">{p.skills || 'N/A'}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-sm text-gray-500 mb-1 font-medium">LinkedIn</p>
-                      <p className="font-semibold text-palette-400">{p.linkedinUrl || 'N/A'}</p>
-                    </div>
-                  </div>
-                )
-              )}
-
-              {(activeTab === 'education' || activeTab === 'experience' || activeTab === 'documents') && (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
-                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Detailed Editing Coming Soon</h3>
-                  <p className="text-gray-500 max-w-sm">For now, please edit {tabs.find(t=>t.id===activeTab).label.toLowerCase()} during the job application process.</p>
+            {/* Continuous Sections */}
+            <section id="basic" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+              <div className="mb-6 pb-2 border-b border-gray-100">
+                <h3 className="text-xl font-bold text-gray-800">Basic Details</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">First Name <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
                 </div>
-              )}
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Last Name <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={formData.lastName || ''} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Phone Number <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Email (Read Only)</label>
+                  <input type="text" disabled className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed" value={formData.email || ''} />
+                </div>
+              </div>
+              </section>
 
-            </div>
+              <section id="education" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+                <div className="flex justify-between items-start mb-6 pb-2 border-b border-gray-100">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">Education</h3>
+                    <p className="text-sm text-gray-500 mt-1">Details like course, university, and more, help recruiters identify your educational background</p>
+                  </div>
+                  <button onClick={() => { setExpandedEduIndex(formData.qualifications?.length || 0); addArrayItem('qualifications', { educationType: '', board: '', endYear: '', schoolMedium: '', percentage: '', university: '', course: '', startYear: '', gradingSystem: '', isPrimary: false }); }} className="text-green-500 hover:text-green-600 font-semibold text-sm">
+                    Add +
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {(formData.qualifications || []).map((q, idx) => {
+                    const isSchool = q.educationType === '10th' || q.educationType === '12th';
+                    const isHigher = q.educationType === 'Graduation/Diploma' || q.educationType === 'Masters/Post-Graduation';
+                    
+                    if (expandedEduIndex !== idx) {
+                      return (
+                        <div key={idx} className="group relative">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-gray-900 text-[15px]">
+                              {isHigher ? (q.course || q.educationType || 'Higher Education') : 
+                               isSchool ? (q.educationType === '12th' ? 'Class XII' : 'Class X') : 
+                               (q.educationType || 'Education')}
+                            </h4>
+                            <button onClick={() => setExpandedEduIndex(idx)} className="text-gray-400 hover:text-blue-600 transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                          </div>
+                          
+                          <p className="text-gray-800 mt-1">
+                            {isHigher ? (q.university || 'University not specified') : (q.board || 'Board not specified')}
+                          </p>
+                          
+                          <p className="text-gray-500 text-sm mt-0.5">
+                            {isHigher ? `${q.startYear || 'YYYY'} - ${q.endYear || 'YYYY'}` : (q.endYear || 'YYYY')}
+                          </p>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div key={idx} className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm relative">
+                        <button onClick={() => { removeArrayItem('qualifications', idx); setExpandedEduIndex(-1); }} className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-10">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                        
+                        <div className="space-y-6 pt-2">
+                          <div>
+                            <label className="block text-sm font-bold text-gray-900 mb-1.5">Education <span className="text-red-500">*</span></label>
+                            <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.educationType || ''} onChange={e => updateArray('qualifications', idx, 'educationType', e.target.value)}>
+                              <option value="">Select education type</option>
+                              <option value="10th">10th</option>
+                              <option value="12th">12th</option>
+                              <option value="Graduation/Diploma">Graduation/Diploma</option>
+                              <option value="Masters/Post-Graduation">Masters/Post-Graduation</option>
+                            </select>
+                          </div>
+
+                          {isSchool && (
+                            <>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Board <span className="text-red-500">*</span></label>
+                                <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.board || ''} onChange={e => updateArray('qualifications', idx, 'board', e.target.value)}>
+                                  <option value="">Select board</option>
+                                  <option value="CBSE">CBSE</option>
+                                  <option value="ICSE">ICSE</option>
+                                  <option value="State Board">State Board</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Passing out year <span className="text-red-500">*</span></label>
+                                <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.endYear || ''} onChange={e => updateArray('qualifications', idx, 'endYear', e.target.value)}>
+                                  <option value="">Select passing out year</option>
+                                  {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i + 5).map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">School medium <span className="text-red-500">*</span></label>
+                                <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.schoolMedium || ''} onChange={e => updateArray('qualifications', idx, 'schoolMedium', e.target.value)}>
+                                  <option value="">Select medium</option>
+                                  <option value="English">English</option>
+                                  <option value="Hindi">Hindi</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Marks <span className="text-red-500">*</span></label>
+                                <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="% marks of 100 maximum" value={q.percentage || ''} onChange={e => updateArray('qualifications', idx, 'percentage', e.target.value)} />
+                              </div>
+                            </>
+                          )}
+
+                          {isHigher && (
+                            <>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">University/Institute <span className="text-red-500">*</span></label>
+                                <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Select university/institute" value={q.university || ''} onChange={e => updateArray('qualifications', idx, 'university', e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Course <span className="text-red-500">*</span></label>
+                                <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.course || ''} onChange={e => updateArray('qualifications', idx, 'course', e.target.value)}>
+                                  <option value="">Select course</option>
+                                  <option value="B.Tech/B.E.">B.Tech/B.E.</option>
+                                  <option value="B.Sc">B.Sc</option>
+                                  <option value="B.Com">B.Com</option>
+                                  <option value="B.A">B.A</option>
+                                  <option value="BBA">BBA</option>
+                                  <option value="M.Tech/M.E.">M.Tech/M.E.</option>
+                                  <option value="MBA/PGDM">MBA/PGDM</option>
+                                  <option value="MCA">MCA</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Course duration <span className="text-red-500">*</span></label>
+                                <div className="flex items-center gap-4">
+                                  <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.startYear || ''} onChange={e => updateArray('qualifications', idx, 'startYear', e.target.value)}>
+                                    <option value="">Starting year</option>
+                                    {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i).map(year => (
+                                      <option key={year} value={year}>{year}</option>
+                                    ))}
+                                  </select>
+                                  <span className="font-bold text-gray-900">To</span>
+                                  <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.endYear || ''} onChange={e => updateArray('qualifications', idx, 'endYear', e.target.value)}>
+                                    <option value="">Ending year</option>
+                                    {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i + 5).map(year => (
+                                      <option key={year} value={year}>{year}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Grading system</label>
+                                <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-500 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.gradingSystem || ''} onChange={e => updateArray('qualifications', idx, 'gradingSystem', e.target.value)}>
+                                  <option value="">Select grading system</option>
+                                  <option value="Scale 10 Grading System">Scale 10 Grading System</option>
+                                  <option value="Scale 4 Grading System">Scale 4 Grading System</option>
+                                  <option value="% Marks of 100 Maximum">% Marks of 100 Maximum</option>
+                                </select>
+                              </div>
+                              {q.gradingSystem && (
+                                <div>
+                                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Marks <span className="text-red-500">*</span></label>
+                                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Enter grade or marks" value={q.percentage || ''} onChange={e => updateArray('qualifications', idx, 'percentage', e.target.value)} />
+                                </div>
+                              )}
+                              {q.educationType === 'Graduation/Diploma' && (
+                                <div className="flex items-center pt-2">
+                                  <input type="checkbox" id={`primary-grad-${idx}`} className="w-5 h-5 rounded border-gray-300 text-green-500 focus:ring-green-500" checked={q.isPrimary || false} onChange={e => updateArray('qualifications', idx, 'isPrimary', e.target.checked)} />
+                                  <label htmlFor={`primary-grad-${idx}`} className="ml-3 text-gray-700 font-medium">Make this as my primary graduation/diploma</label>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          
+                          <div className="flex justify-end mt-4">
+                            <button onClick={() => setExpandedEduIndex(-1)} className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors shadow-sm">Save</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  <div className="pt-4">
+                    <button onClick={() => { setExpandedEduIndex(formData.qualifications?.length || 0); addArrayItem('qualifications', { educationType: '', board: '', endYear: '', schoolMedium: '', percentage: '', university: '', course: '', startYear: '', gradingSystem: '', isPrimary: false }); }} className="text-green-500 font-semibold hover:text-green-600 text-sm">
+                      Add +
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section id="experience" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+              <div className="flex justify-between items-start mb-6 pb-2 border-b border-gray-100">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">Work Experience</h3>
+                </div>
+                <button onClick={() => { setExpandedExpIndex(formData.experience?.length || 0); addArrayItem('experience', { companyName: '', noticePeriod: '', roles: [{ jobTitle: '', employmentType: '', currentCompany: false, joiningDate: '', leavingDate: '', roleDescription: '' }] }); }} className="text-green-500 font-semibold hover:text-green-600 text-sm">
+                  Add +
+                </button>
+              </div>
+              <div className="space-y-6">
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium text-gray-700">Are you a Fresher?</label>
+                        <button type="button" onClick={() => setFormData({...formData, isFresher: !formData.isFresher})} className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${formData.isFresher ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                          {formData.isFresher ? '✓ Yes, I am a Fresher' : 'No, I have experience'}
+                        </button>
+                      </div>
+                      
+                      {!formData.isFresher && (
+                        <div className="space-y-6">
+                          {(formData.experience || []).map((exp, cIdx) => {
+                            const hasCurrentRole = (exp.roles || []).some(r => r.currentCompany);
+                            
+                            if (expandedExpIndex !== cIdx) {
+                              return (
+                                <div key={cIdx} className="group relative border-b border-gray-100 last:border-0 pb-6 mb-6 last:pb-0 last:mb-0">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold text-gray-900 text-[15px]">
+                                      {exp.companyName || 'Company Name'}
+                                    </h4>
+                                    <button onClick={() => setExpandedExpIndex(cIdx)} className="text-gray-400 hover:text-blue-600 transition-colors">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="mt-4 pl-4 border-l-2 border-green-500 ml-2 space-y-5">
+                                    {(exp.roles || []).map((role, rIdx) => (
+                                      <div key={rIdx} className="relative">
+                                        <div className="absolute w-3 h-3 bg-green-500 rounded-full -left-[23px] top-1.5 ring-4 ring-white"></div>
+                                        <p className="font-semibold text-gray-800">{role.jobTitle || 'Job Title'}</p>
+                                        <p className="text-gray-500 text-sm mt-0.5">
+                                          {role.joiningDate || 'YYYY-MM'} - {role.currentCompany ? 'Present' : (role.leavingDate || 'YYYY-MM')} | {role.employmentType || 'Employment Type'}
+                                        </p>
+                                        {role.roleDescription && (
+                                          <p className="text-gray-600 text-sm mt-2">{role.roleDescription}</p>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            
+                            return (
+                              <div key={cIdx} className="p-4 border border-gray-200 rounded-xl space-y-4 bg-gray-50 relative">
+                                <button onClick={() => { removeArrayItem('experience', cIdx); setExpandedExpIndex(-1); }} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors z-10">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                                <h4 className="font-semibold text-gray-700 pr-8">Company {cIdx + 1}</h4>
+                                <div>
+                                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Company Name <span className="text-red-500">*</span></label>
+                                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={exp.companyName || ''} onChange={e => {
+                                    const newExp = [...(formData.experience || [])];
+                                    newExp[cIdx].companyName = e.target.value;
+                                    setFormData({...formData, experience: newExp});
+                                  }} />
+                                </div>
+                                <div className="relative border-l-2 border-green-500 ml-3 mt-8 space-y-8 pb-4">
+                                  {(exp.roles || []).map((role, rIdx) => (
+                                    <div key={rIdx} className="relative pl-6">
+                                      <div className="absolute -left-[9px] top-6 w-4 h-4 rounded-full bg-green-500 border-4 border-gray-50 shadow-sm"></div>
+                                      
+                                      <div className="p-6 border border-gray-200 rounded-xl space-y-6 bg-white shadow-sm relative group">
+                                        <button onClick={() => {
+                                          const newExp = [...(formData.experience || [])];
+                                          newExp[cIdx].roles.splice(rIdx, 1);
+                                          setFormData({...formData, experience: newExp});
+                                        }} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors hidden group-hover:block">
+                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                        
+                                        <div className="absolute -top-3 left-4 bg-white px-3 text-sm font-bold text-green-600 border border-green-100 rounded-full shadow-sm">Role {rIdx + 1}</div>
+                                        
+                                        <div className="space-y-6 pt-2">
+                                      <div>
+                                        <label className="block text-sm font-bold text-gray-900 mb-1.5">Job Title <span className="text-red-500">*</span></label>
+                                        <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.jobTitle || ''} onChange={e => {
+                                          const newExp = [...(formData.experience || [])];
+                                          newExp[cIdx].roles[rIdx].jobTitle = e.target.value;
+                                          setFormData({...formData, experience: newExp});
+                                        }} />
+                                      </div>
+                                      <div>
+                                        <label className="block text-sm font-bold text-gray-900 mb-1.5">Employment Type <span className="text-red-500">*</span></label>
+                                        <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.employmentType || ''} onChange={e => {
+                                          const newExp = [...(formData.experience || [])];
+                                          newExp[cIdx].roles[rIdx].employmentType = e.target.value;
+                                          setFormData({...formData, experience: newExp});
+                                        }}>
+                                          <option value="">Select</option>
+                                          <option value="Full-time">Full-time</option>
+                                          <option value="Part-time">Part-time</option>
+                                          <option value="Contract">Contract</option>
+                                        </select>
+                                      </div>
+                                      <div className="flex items-center mt-6">
+                                        <input type="checkbox" id={`current-${cIdx}-${rIdx}`} className="w-5 h-5 rounded border-gray-300 text-green-500 focus:ring-green-500 mr-3" checked={role.currentCompany || false} onChange={e => {
+                                          const newExp = [...(formData.experience || [])];
+                                          newExp[cIdx].roles[rIdx].currentCompany = e.target.checked;
+                                          if (e.target.checked) newExp[cIdx].roles[rIdx].leavingDate = '';
+                                          setFormData({...formData, experience: newExp});
+                                        }} />
+                                        <label htmlFor={`current-${cIdx}-${rIdx}`} className="text-sm font-bold text-gray-900">Current role</label>
+                                      </div>
+                                      <div className="space-y-6">
+                                        <div>
+                                          <label className="block text-sm font-bold text-gray-900 mb-1.5">Joining <span className="text-red-500">*</span></label>
+                                          <input type="month" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.joiningDate || ''} onChange={e => {
+                                            const newExp = [...(formData.experience || [])];
+                                            newExp[cIdx].roles[rIdx].joiningDate = e.target.value;
+                                            setFormData({...formData, experience: newExp});
+                                          }} />
+                                        </div>
+                                        {!role.currentCompany && (
+                                          <div>
+                                            <label className="block text-sm font-bold text-gray-900 mb-1.5">Leaving <span className="text-red-500">*</span></label>
+                                            <input type="month" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.leavingDate || ''} onChange={e => {
+                                              const newExp = [...(formData.experience || [])];
+                                              newExp[cIdx].roles[rIdx].leavingDate = e.target.value;
+                                              setFormData({...formData, experience: newExp});
+                                            }} />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="col-span-2">
+                                        <label className="block text-sm font-bold text-gray-900 mb-1.5">Role Description</label>
+                                        <textarea className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 h-24 resize-none outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.roleDescription || ''} onChange={e => {
+                                          const newExp = [...(formData.experience || [])];
+                                          newExp[cIdx].roles[rIdx].roleDescription = e.target.value;
+                                          setFormData({...formData, experience: newExp});
+                                        }} />
+                                      </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+
+                                  <div className="relative pl-6">
+                                    <div className="absolute -left-[7px] top-2 w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-50"></div>
+                                    <button type="button" onClick={() => {
+                                      const newExp = [...(formData.experience || [])];
+                                      newExp[cIdx].roles.push({ jobTitle: '', employmentType: '', currentCompany: false, joiningDate: '', leavingDate: '', roleDescription: '' });
+                                      setFormData({...formData, experience: newExp});
+                                    }} className="flex items-center gap-1 text-sm font-bold text-green-600 hover:text-green-700 transition-colors">
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                                      Add Role
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {hasCurrentRole && (
+                                  <div className="mt-6 pt-6 border-t border-gray-200">
+                                    <label className="block text-sm font-bold text-gray-900 mb-1.5">Notice Period</label>
+                                    <select className="w-1/2 px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={exp.noticePeriod || ''} onChange={e => {
+                                      const newExp = [...(formData.experience || [])];
+                                      newExp[cIdx].noticePeriod = e.target.value;
+                                      setFormData({...formData, experience: newExp});
+                                    }}>
+                                      <option value="">Select</option>
+                                      <option value="15 Days">15 Days</option>
+                                      <option value="30 Days">30 Days</option>
+                                      <option value="60 Days">60 Days</option>
+                                      <option value="90+ Days">90+ Days</option>
+                                    </select>
+                                  </div>
+                                )}
+                                <div className="flex justify-end mt-4">
+                                  <button onClick={() => setExpandedExpIndex(-1)} className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors shadow-sm">Save</button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          
+                          <div className="pt-4">
+                            <button onClick={() => { setExpandedExpIndex(formData.experience?.length || 0); addArrayItem('experience', { companyName: '', noticePeriod: '', roles: [{ jobTitle: '', employmentType: '', currentCompany: false, joiningDate: '', leavingDate: '', roleDescription: '' }] }); }} className="text-green-500 font-semibold hover:text-green-600 text-sm">
+                              Add +
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+              </section>
+
+              <section id="professional" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+              <div className="mb-6 pb-2 border-b border-gray-100">
+                <h3 className="text-xl font-bold text-gray-800">Professional Overview</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Designation <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentDesignation || ''} onChange={e => setP('currentDesignation', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">LinkedIn Profile URL <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.linkedinUrl || ''} onChange={e => setP('linkedinUrl', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Location <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentLocation || ''} onChange={e => setP('currentLocation', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Salary <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentSalary || ''} onChange={e => setP('currentSalary', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Expected Salary <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.expectedSalary || ''} onChange={e => setP('expectedSalary', e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Skills <span className="text-red-500">*</span></label>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="React, Node, etc." value={p.skills || ''} onChange={e => setP('skills', e.target.value)} />
+                </div>
+              </div>
+              </section>
+
+              <section id="documents" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+              <div className="mb-6 pb-2 border-b border-gray-100">
+                <h3 className="text-xl font-bold text-gray-800">Documents</h3>
+              </div>
+              <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="p-4 border border-gray-200 rounded-xl">
+                        <label className="block text-sm font-bold text-gray-900 mb-3">Upload Resume <span className="text-red-500">*</span></label>
+                        <input type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-palette-50 file:text-palette-900 hover:file:bg-palette-100 cursor-pointer" onChange={e => setDoc('resume', e.target.files[0]?.name || '')} />
+                        {docs.resume && <p className="text-sm text-gray-600 mt-3 flex items-center gap-2"><svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> {docs.resume}</p>}
+                      </div>
+                      <div className="p-4 border border-gray-200 rounded-xl">
+                        <label className="block text-sm font-bold text-gray-900 mb-3">Upload Cover Letter <span className="text-red-500">*</span></label>
+                        <input type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-palette-50 file:text-palette-900 hover:file:bg-palette-100 cursor-pointer" onChange={e => setDoc('coverLetter', e.target.files[0]?.name || '')} />
+                        {docs.coverLetter && <p className="text-sm text-gray-600 mt-3 flex items-center gap-2"><svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> {docs.coverLetter}</p>}
+                      </div>
+                    </div>
+                </div>
+              </section>
+
           </div>
         </div>
       </main>

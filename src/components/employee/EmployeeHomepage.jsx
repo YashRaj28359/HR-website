@@ -7,6 +7,27 @@ const EmployeeHomepage = () => {
   const [selectedJobId, setSelectedJobId] = useState(dummyJobs[0].id);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  const [savedJobs, setSavedJobs] = useState(() => {
+    try {
+      const saved = localStorage.getItem('savedJobs');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const toggleSaveJob = (jobId, e) => {
+    if (e) e.stopPropagation();
+    setSavedJobs(prev => {
+      const newSaved = prev.includes(jobId) 
+        ? prev.filter(id => id !== jobId) 
+        : [...prev, jobId];
+      localStorage.setItem('savedJobs', JSON.stringify(newSaved));
+      return newSaved;
+    });
+  };
+
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -61,69 +82,64 @@ const EmployeeHomepage = () => {
           </div>
 
           {/* Right Icons */}
-          <div className="flex items-center justify-end gap-6 w-48">
+          <div className="flex items-center justify-end gap-6 w-auto">
+            {/* My Jobs (Bookmark) */}
+            <button onClick={() => navigate('/my-jobs')} className="text-gray-700 hover:text-black transition-colors" title="My jobs">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+              </svg>
+            </button>
 
-            <button className="text-gray-500 hover:text-gray-900 relative">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            {/* Notifications (Bell) */}
+            <button className="text-gray-700 hover:text-black transition-colors relative" title="Notifications">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
               </svg>
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
             </button>
+
+            {/* Profile Dropdown Toggle */}
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-10 h-10 bg-palette-900 text-white rounded-full flex items-center justify-center font-bold text-sm hover:ring-2 hover:ring-palette-400 hover:ring-offset-2 transition-all focus:outline-none"
+                className="text-gray-700 hover:text-black transition-colors flex items-center justify-center focus:outline-none"
+                title="Account"
               >
-                Y
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </button>
               
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-4 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                  {/* Top Profile Section */}
-                  <div className="p-5 bg-gradient-to-b from-gray-50 to-white">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 bg-palette-900 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-inner border-2 border-white">
-                        Y
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-lg font-black text-gray-900 truncate">Yash Raj</p>
-                        <p className="text-sm text-gray-500 truncate font-medium">yash@example.com</p>
-                      </div>
-                    </div>
-                    
+                <div className="absolute right-0 mt-3 w-80 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                  <div className="p-5 border-b border-gray-200">
+                    <p className="text-base font-bold text-gray-900 truncate">yashrajsingh28359@gmail.com</p>
+                  </div>
+                  
+                  <div className="py-2 border-b border-gray-200">
                     <button 
                       onClick={() => navigate('/profile')}
-                      className="w-full py-2.5 px-4 bg-palette-50 text-palette-900 hover:bg-palette-900 hover:text-white font-bold rounded-xl transition-colors duration-300 flex items-center justify-center gap-2"
+                      className="w-full text-left px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                      View Full Profile
+                      <svg className="w-5 h-5 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                      </svg>
+                      <span className="text-[15px] text-gray-800">Profile</span>
                     </button>
                   </div>
 
-                  {/* Menu Links */}
-                  <div className="p-3 border-t border-gray-100 bg-white">
-                    <button 
-                      className="w-full text-left px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-3"
-                    >
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                      Settings & Privacy
-                    </button>
-                    <button 
-                      className="w-full text-left px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-3"
-                    >
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      Help Center
-                    </button>
+                  <div className="p-4 border-b border-gray-200 flex justify-center text-xs text-gray-600">
+                    <p>
+                      © 2026 Indeed - <span className="hover:underline cursor-pointer">Terms</span> - <span className="hover:underline cursor-pointer">Accessibility at Indeed</span>
+                    </p>
                   </div>
 
-                  {/* Logout */}
-                  <div className="p-3 border-t border-gray-100 bg-gray-50">
+                  <div className="py-2">
                     <button 
                       onClick={() => navigate('/')}
-                      className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-100 rounded-xl transition-colors flex items-center gap-3"
+                      className="w-full text-center py-2 text-[15px] font-bold text-blue-700 hover:underline transition-colors"
                     >
-                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                      Logout
+                      Sign out
                     </button>
                   </div>
                 </div>
@@ -173,8 +189,15 @@ const EmployeeHomepage = () => {
                   </div>
                 </div>
                 <div className="flex flex-col items-end justify-between h-full min-h-[80px]">
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                  <button 
+                    onClick={(e) => toggleSaveJob(job.id, e)} 
+                    className={`transition-colors ${savedJobs.includes(job.id) ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  >
+                    {savedJobs.includes(job.id) ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                    )}
                   </button>
                   <span className="text-xs text-gray-400 font-medium">{job.postedAt}</span>
                 </div>
@@ -220,8 +243,15 @@ const EmployeeHomepage = () => {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
                   Apply
                 </button>
-                <button className="px-3 py-2.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                <button 
+                  onClick={() => toggleSaveJob(selectedJobId)}
+                  className={`px-3 py-2.5 border rounded-lg transition-colors ${savedJobs.includes(selectedJobId) ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                >
+                  {savedJobs.includes(selectedJobId) ? (
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z" /></svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                  )}
                 </button>
               </div>
             </div>

@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        roboto: ['Roboto', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        heading: ['Plus Jakarta Sans', 'sans-serif'],
       },
       colors: {
         palette: {
-          100: '#E8F5E9',
-          200: '#A5D6A7',
+          100: '#ffffffff',
+          200: '#A5D6A7', 
           400: '#66BB6A',
           900: '#1B5E20',
         }

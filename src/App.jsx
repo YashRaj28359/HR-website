@@ -4,6 +4,7 @@ import EmployeeHomepage from './components/employee/EmployeeHomepage';
 import EmployeeProfile from './components/employee/EmployeeProfile';
 import EmployeeLoginModal from './components/employee/EmployeeLoginModal';
 import EmployeeRegisterModal from './components/employee/EmployeeRegisterModal';
+import MyJobs from './components/employee/myjobs/MyJobs';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -98,6 +99,11 @@ function App() {
         <Route 
           path="/profile" 
           element={isLoggedIn ? <EmployeeProfile /> : <Navigate to="/" />} 
+        />
+
+        <Route 
+          path="/my-jobs" 
+          element={isLoggedIn ? <MyJobs /> : <Navigate to="/" />} 
         />
       </Routes>
 
