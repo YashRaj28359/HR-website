@@ -4,12 +4,72 @@ import EmployeeHomepage from './components/employee/EmployeeHomepage';
 import EmployeeProfile from './components/employee/EmployeeProfile';
 import EmployeeLoginModal from './components/employee/EmployeeLoginModal';
 import EmployeeRegisterModal from './components/employee/EmployeeRegisterModal';
+import EmployerLoginModal from './components/employer/EmployerLoginModal';
+import EmployerRegisterModal from './components/employer/EmployerRegisterModal';
 import MyJobs from './components/employee/myjobs/MyJobs';
+import EmployerDashboard from './components/employer/dashboard/EmployerDashboard';
+import { dummyJobs } from './data/dummyJobs';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null); // 'employee' or 'employer'
+  const [jobs, setJobs] = useState(dummyJobs);
+  const [candidates, setCandidates] = useState([]);
+
+  const addJob = (newJob) => {
+    setJobs(prev => [newJob, ...prev]);
+  };
+
+  const applyToJob = (jobId, candidateData) => {
+    // Increment job applications count
+    setJobs(prevJobs => prevJobs.map(job => 
+      job.id === jobId ? { ...job, applications: (job.applications || 0) + 1 } : job
+    ));
+
+    // Add candidate to global list
+    setCandidates(prev => [...prev, {
+      id: Date.now(),
+      jobId,
+      ...candidateData,
+      status: 'New',
+      statusColor: 'bg-blue-50 text-blue-600 border border-blue-100',
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    }]);
+  };
+
+  const updateCandidateStatus = (candidateId, newStatus) => {
+    setCandidates(prev => {
+      let targetJobId = null;
+      const updatedCandidates = prev.map(c => {
+        if (c.id === candidateId) {
+           targetJobId = c.jobId;
+           let color = 'bg-blue-50 text-blue-600 border border-blue-100';
+           if (newStatus.toLowerCase() === 'shortlisted') color = 'bg-green-50 text-green-600 border border-green-100';
+           else if (newStatus.toLowerCase() === 'rejected') color = 'bg-red-50 text-red-600 border border-red-100';
+           return { ...c, status: newStatus, statusColor: color };
+        }
+        return c;
+      });
+      
+      if (targetJobId) {
+        try {
+          const applied = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
+          const updated = applied.map(job => 
+            job.id === targetJobId ? { ...job, status: newStatus } : job
+          );
+          localStorage.setItem('appliedJobs', JSON.stringify(updated));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      return updatedCandidates;
+    });
+  };
+
   const [isEmployeeLoginOpen, setIsEmployeeLoginOpen] = useState(false);
   const [isEmployeeRegisterOpen, setIsEmployeeRegisterOpen] = useState(false);
+  const [isEmployerLoginOpen, setIsEmployerLoginOpen] = useState(false);
+  const [isEmployerRegisterOpen, setIsEmployerRegisterOpen] = useState(false);
   const navigate = useNavigate();
 
   const openRegister = () => {
@@ -22,11 +82,30 @@ function App() {
     setIsEmployeeLoginOpen(true);
   };
 
-  const handleLoginSuccess = () => {
+  const openEmployerRegister = () => {
+    setIsEmployerLoginOpen(false);
+    setIsEmployerRegisterOpen(true);
+  };
+
+  const openEmployerLogin = () => {
+    setIsEmployerRegisterOpen(false);
+    setIsEmployerLoginOpen(true);
+  };
+
+  const handleEmployeeLoginSuccess = () => {
     setIsLoggedIn(true);
+    setUserRole('employee');
     setIsEmployeeLoginOpen(false);
     setIsEmployeeRegisterOpen(false);
     navigate('/employee');
+  };
+
+  const handleEmployerLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setUserRole('employer');
+    setIsEmployerLoginOpen(false);
+    setIsEmployerRegisterOpen(false);
+    navigate('/employer');
   };
 
   return (
@@ -43,6 +122,7 @@ function App() {
           Employee Login
         </button>
         <button 
+          onClick={() => setIsEmployerLoginOpen(true)}
           className="px-6 py-2.5 rounded-full font-medium bg-palette-900 text-white hover:bg-palette-400 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-palette-200 focus:outline-none focus:ring-2 focus:ring-palette-900 focus:ring-offset-2"
         >
           Employer Login
@@ -93,7 +173,7 @@ function App() {
         
         <Route 
           path="/employee" 
-          element={isLoggedIn ? <EmployeeHomepage /> : <Navigate to="/" />} 
+          element={isLoggedIn ? <EmployeeHomepage jobs={jobs} applyToJob={applyToJob} /> : <Navigate to="/" />} 
         />
 
         <Route 
@@ -103,7 +183,23 @@ function App() {
 
         <Route 
           path="/my-jobs" 
-          element={isLoggedIn ? <MyJobs /> : <Navigate to="/" />} 
+          element={isLoggedIn && userRole === 'employee' ? <MyJobs jobs={jobs} /> : <Navigate to="/" />} 
+        />
+
+        {/* Employer Routes */}
+        <Route 
+          path="/employer/*" 
+          element={
+            isLoggedIn && userRole === 'employer' ? (
+              <EmployerDashboard 
+                onLogout={() => navigate('/')} 
+                jobs={jobs} 
+                addJob={addJob}
+                candidates={candidates}
+                updateCandidateStatus={updateCandidateStatus}
+              />
+            ) : <Navigate to="/" />
+          } 
         />
       </Routes>
 
@@ -111,13 +207,25 @@ function App() {
         isOpen={isEmployeeLoginOpen} 
         onClose={() => setIsEmployeeLoginOpen(false)} 
         onRegisterClick={openRegister}
-        onLoginSuccess={handleLoginSuccess}
+        onLoginSuccess={handleEmployeeLoginSuccess}
       />
       <EmployeeRegisterModal 
         isOpen={isEmployeeRegisterOpen}
         onClose={() => setIsEmployeeRegisterOpen(false)}
         onLoginClick={openLogin}
-        onLoginSuccess={handleLoginSuccess}
+        onLoginSuccess={handleEmployeeLoginSuccess}
+      />
+      <EmployerLoginModal 
+        isOpen={isEmployerLoginOpen} 
+        onClose={() => setIsEmployerLoginOpen(false)} 
+        onRegisterClick={openEmployerRegister}
+        onLoginSuccess={handleEmployerLoginSuccess}
+      />
+      <EmployerRegisterModal 
+        isOpen={isEmployerRegisterOpen}
+        onClose={() => setIsEmployerRegisterOpen(false)}
+        onLoginClick={openEmployerLogin}
+        onLoginSuccess={handleEmployerLoginSuccess}
       />
     </>
   )

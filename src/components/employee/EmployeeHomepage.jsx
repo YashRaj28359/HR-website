@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dummyJobs } from '../../data/dummyJobs';
 import JobApplicationModal from './JobApplicationModal';
 
-const EmployeeHomepage = () => {
-  const [selectedJobId, setSelectedJobId] = useState(dummyJobs[0].id);
+const EmployeeHomepage = ({ jobs = [], applyToJob }) => {
+  const [selectedJobId, setSelectedJobId] = useState(jobs.length > 0 ? jobs[0].id : null);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
@@ -42,7 +41,7 @@ const EmployeeHomepage = () => {
   }, []);
 
 
-  const selectedJob = dummyJobs.find(j => j.id === selectedJobId);
+  const selectedJob = jobs.find(j => j.id === selectedJobId);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -155,7 +154,7 @@ const EmployeeHomepage = () => {
         
         {/* Left Column (Job List) */}
         <div className="w-[400px] flex-shrink-0 flex flex-col gap-3 h-full overflow-y-auto pr-2 custom-scrollbar">
-          {dummyJobs.map(job => (
+          {jobs.map(job => (
             <div 
               key={job.id} 
               onClick={() => setSelectedJobId(job.id)}
@@ -296,7 +295,8 @@ const EmployeeHomepage = () => {
       <JobApplicationModal 
         isOpen={isApplicationModalOpen} 
         onClose={() => setIsApplicationModalOpen(false)} 
-        job={selectedJob} 
+        job={selectedJob}
+        applyToJob={applyToJob}
       />
     </div>
   );

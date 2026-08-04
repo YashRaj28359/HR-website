@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dummyJobs } from '../../../data/dummyJobs';
 import JobApplicationModal from '../JobApplicationModal';
 
-const MyJobs = () => {
+const MyJobs = ({ jobs = [] }) => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('applied'); // default to applied based on user request
@@ -128,7 +127,7 @@ const MyJobs = () => {
             {savedJobs.length === 0 ? (
               <p className="text-gray-500 py-4">No saved jobs.</p>
             ) : (
-              dummyJobs.filter(j => savedJobs.includes(j.id)).map(job => (
+              jobs.filter(j => savedJobs.includes(j.id)).map(job => (
                 <div key={job.id} onClick={() => navigate('/employee')} className="py-6 border-b border-gray-200 flex flex-col md:flex-row md:items-start gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 rounded-xl cursor-pointer group">
                   <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-600 border border-gray-200 font-bold">
                     {job.companyInitial}
@@ -160,13 +159,13 @@ const MyJobs = () => {
         {activeTab === 'applied' && (
           <div className="space-y-6">
             {appliedJobs.length === 0 ? (
-              <p className="text-gray-500 py-4">No applied jobs.</p>
+              <p className="text-gray-500 py-4">You haven't applied to any jobs yet.</p>
             ) : (
-              appliedJobs.map(app => {
-                const job = dummyJobs.find(j => j.id === app.id);
+              appliedJobs.map(applied => {
+                const job = jobs.find(j => j.id === applied.jobId);
                 if (!job) return null;
                 return (
-                  <div key={app.id} className="pb-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 pt-4 rounded-xl cursor-pointer group">
+                  <div key={applied.id} className="pb-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 pt-4 rounded-xl cursor-pointer group">
                     <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
                       <div className="w-10 h-10 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center font-bold text-gray-600 overflow-hidden shadow-sm">
                         {job.companyInitial}

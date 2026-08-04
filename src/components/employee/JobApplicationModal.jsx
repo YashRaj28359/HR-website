@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
-const JobApplicationModal = ({ isOpen, onClose, job }) => {
+const JobApplicationModal = ({ isOpen, onClose, job, applyToJob }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
   const [expandedEduIndex, setExpandedEduIndex] = useState(0);
   const [expandedExpIndex, setExpandedExpIndex] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [skillInput, setSkillInput] = useState('');
 
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem('userProfile');
@@ -36,6 +37,7 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
       lastName: '',
       phone: '',
       email: 'user@example.com',
+      brief: '',
       
       qualifications: [
         { stream: '', school: '', board: '', startYear: '', endYear: '', percentage: '' }
@@ -128,6 +130,29 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
             date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
           });
           localStorage.setItem('appliedJobs', JSON.stringify(appliedJobs));
+          
+          // Send candidate data to global state
+          if (applyToJob) {
+            applyToJob(job.id, {
+              name: (formData.firstName || formData.lastName) ? `${formData.firstName || ''} ${formData.lastName || ''}`.trim() : 'Applicant',
+              email: formData.email,
+              phone: formData.phone,
+              location: formData.professionalDetails?.currentLocation,
+              initials: (formData.firstName ? formData.firstName.charAt(0) : 'A') + (formData.lastName ? formData.lastName.charAt(0) : ''),
+              bg: 'bg-green-600',
+              apps: 1,
+              exp: formData.isFresher ? 'Fresher' : (formData.experience?.[0]?.companyName ? 'Experienced' : 'N/A'),
+              currentCTC: formData.professionalDetails?.currentSalary || 'N/A',
+              expectedCTC: formData.professionalDetails?.expectedSalary || 'N/A',
+              summary: formData.brief || formData.professionalDetails?.majorAchievements,
+              skills: formData.professionalDetails?.skills ? formData.professionalDetails.skills.split(',').map(s => s.trim()) : null,
+              experience: formData.experience,
+              education: formData.qualifications,
+              history: [
+                { title: job.title, status: 'Applied', color: 'bg-blue-50 text-blue-600 border border-blue-100' }
+              ]
+            });
+          }
         }
       } catch (err) {
         console.error("Error saving applied job", err);
@@ -153,6 +178,26 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
     setFormData({ ...formData, [arrayName]: newArr });
   };
 
+  const handleSkillKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = skillInput.trim();
+      if (val) {
+        const p = formData.professionalDetails || {};
+        const currentSkills = p.skills ? p.skills.split(',').filter(s => s.trim()) : [];
+        if (!currentSkills.includes(val)) {
+          setFormData({...formData, professionalDetails: {...p, skills: [...currentSkills, val].join(', ')}});
+        }
+        setSkillInput('');
+      }
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    const p = formData.professionalDetails || {};
+    const currentSkills = p.skills ? p.skills.split(',').map(s=>s.trim()).filter(s => s) : [];
+    setFormData({...formData, professionalDetails: {...p, skills: currentSkills.filter(s => s !== skillToRemove).join(', ')}});
+  };
 
   // --- Fast Apply Components (Old Users) ---
 
@@ -361,6 +406,16 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
         <div>
           <label className="block text-sm font-bold text-gray-900 mb-1.5">Email (Read Only)</label>
           <input type="email" disabled className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed" value={formData.email || ''} />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-bold text-gray-900 mb-1.5">Brief about yourself</label>
+          <textarea 
+            rows="3"
+            placeholder="I am a passionate professional..."
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all custom-scrollbar" 
+            value={formData.brief || ''} 
+            onChange={e => setFormData({...formData, brief: e.target.value})} 
+          ></textarea>
         </div>
       </div>
     </div>
@@ -762,7 +817,14 @@ const JobApplicationModal = ({ isOpen, onClose, job }) => {
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-900 mb-1.5">Skills <span className="text-red-500">*</span></label>
-            <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" placeholder="React, Node.js..." value={p.skills || ''} onChange={e => setP('skills', e.target.value)} />
+            <div className="flex flex-wrap gap-2 mb-2">
+              {(p.skills ? p.skills.split(',').filter(s => s.trim()) : []).map(skill => (
+                <span key={skill} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 flex items-center gap-1 cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors" onClick={() => removeSkill(skill)} title="Click to remove">
+                  {skill} <span className="text-[10px]">✕</span>
+                </span>
+              ))}
+            </div>
+            <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" placeholder="Type a skill and hit Enter" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={handleSkillKeyDown} />
           </div>
           <div className="col-span-2">
             <label className="block text-sm font-bold text-gray-900 mb-1.5">Preferred Locations</label>

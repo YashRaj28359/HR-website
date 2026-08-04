@@ -6,11 +6,13 @@ const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [expandedEduIndex, setExpandedEduIndex] = useState(0);
   const [expandedExpIndex, setExpandedExpIndex] = useState(-1);
+  const [skillInput, setSkillInput] = useState('');
   const [formData, setFormData] = useState({
     firstName: 'Yash Raj',
     lastName: 'Singh',
     phone: '9399886418',
     email: 'sonic16t@gmail.com',
+    brief: '',
     qualifications: [],
     isFresher: true,
     experience: [],
@@ -64,6 +66,25 @@ const EmployeeProfile = () => {
     const newArr = [...(formData[field] || [])];
     newArr.splice(index, 1);
     setFormData({ ...formData, [field]: newArr });
+  };
+
+  const handleSkillKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = skillInput.trim();
+      if (val) {
+        const currentSkills = p.skills ? p.skills.split(',').filter(s => s.trim()) : [];
+        if (!currentSkills.includes(val)) {
+          setP('skills', [...currentSkills, val].join(', '));
+        }
+        setSkillInput('');
+      }
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    const currentSkills = p.skills ? p.skills.split(',').map(s=>s.trim()).filter(s => s) : [];
+    setP('skills', currentSkills.filter(s => s !== skillToRemove).join(', '));
   };
 
   const tabs = [
@@ -261,6 +282,16 @@ const EmployeeProfile = () => {
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Email (Read Only)</label>
                   <input type="text" disabled className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed" value={formData.email || ''} />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Brief about yourself</label>
+                  <textarea 
+                    rows="3"
+                    placeholder="I am a passionate professional..."
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all custom-scrollbar" 
+                    value={formData.brief || ''} 
+                    onChange={e => setFormData({...formData, brief: e.target.value})} 
+                  ></textarea>
                 </div>
               </div>
               </section>
@@ -657,7 +688,14 @@ const EmployeeProfile = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Skills <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="React, Node, etc." value={p.skills || ''} onChange={e => setP('skills', e.target.value)} />
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(p.skills ? p.skills.split(',').filter(s => s.trim()) : []).map(skill => (
+                      <span key={skill} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 flex items-center gap-1 cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors" onClick={() => removeSkill(skill)} title="Click to remove">
+                        {skill} <span className="text-[10px]">✕</span>
+                      </span>
+                    ))}
+                  </div>
+                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Type a skill and hit Enter" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={handleSkillKeyDown} />
                 </div>
               </div>
               </section>
