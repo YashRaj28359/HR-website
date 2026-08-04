@@ -130,14 +130,14 @@ function App() {
       </nav>
 
       {/* Main Body */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <main className="flex-1 flex flex-col items-center p-6 relative w-full overflow-x-hidden">
         {/* Background decorative elements */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-palette-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
         <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-palette-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-palette-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
-        <div className="w-full max-w-4xl relative z-10 flex flex-col items-center text-center space-y-12">
-          
+        {/* Hero Section */}
+        <div className="w-full max-w-4xl relative z-10 flex flex-col items-center text-center space-y-12 min-h-[60vh] justify-center mb-16">
           <div className="space-y-4">
             <h1 className="text-6xl md:text-7xl font-roboto font-black tracking-tight text-palette-900">
               Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-palette-400 to-palette-900">Dream Job</span>
@@ -163,6 +163,105 @@ function App() {
               Search Jobs
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Jobs List Section */}
+        <div className="w-full max-w-6xl relative z-10 flex flex-col space-y-6 pb-12 mt-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-green-900 flex items-center gap-2">
+                Latest Opportunities 
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </h2>
+              <p className="text-gray-500 mt-2 font-medium">Explore the most recent jobs posted by top employers.</p>
+            </div>
+            <button className="border border-green-200 text-green-800 rounded-full px-5 py-2.5 text-sm font-semibold hover:bg-green-50 transition-colors flex items-center gap-2 shadow-sm">
+              View All Jobs &rarr;
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {jobs.map(job => (
+              <div key={job.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center font-bold text-green-800 text-2xl flex-shrink-0">
+                    {job.companyInitial || job.company.charAt(0)}
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <span className="font-bold text-gray-900">{job.company}</span>
+                    <div className="flex items-center text-gray-500 text-sm mt-1 gap-1.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      Company
+                    </div>
+                  </div>
+                  <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <h3 className="font-bold text-gray-900 text-lg mb-4 leading-snug">{job.title}</h3>
+                
+                <div className="flex flex-wrap gap-3 mb-6">
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {job.location}
+                  </span>
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {job.details?.employmentType || 'Full-Time'}
+                  </span>
+                </div>
+                
+                <hr className="mt-auto border-gray-100 mb-4" />
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <div>
+                      <span className="text-gray-500 text-[11px] uppercase tracking-wider font-semibold block mb-0.5">Salary</span>
+                      <span className="font-bold text-gray-900 text-sm">{job.salary || 'Not specified'}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsEmployeeLoginOpen(true)} className="text-sm font-bold text-green-700 hover:text-green-800 transition-colors flex items-center gap-1">
+                    Apply Now &rarr;
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Pagination */}
+          <div className="flex items-center justify-center gap-3 mt-12 mb-4 relative before:absolute before:h-px before:bg-gray-100 before:w-1/3 before:left-0 before:-z-10 after:absolute after:h-px after:bg-gray-100 after:w-1/3 after:right-0 after:-z-10">
+            <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors bg-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button className="w-9 h-9 rounded-full bg-green-800 text-white font-bold flex items-center justify-center text-sm shadow-md">
+              1
+            </button>
+            <button className="w-9 h-9 rounded-full border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-gray-700 font-bold text-sm transition-colors bg-white">
+              2
+            </button>
+            <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors bg-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>

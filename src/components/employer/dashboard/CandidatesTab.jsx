@@ -101,7 +101,7 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
               <tr className="text-xs text-gray-400 border-b border-gray-100">
                 <th className="px-6 py-4 font-semibold pb-4">Candidate</th>
                 <th className="px-6 py-4 font-semibold pb-4 text-center">Applications</th>
-                <th className="px-6 py-4 font-semibold pb-4 text-center">Experience</th>
+                <th className="px-6 py-4 font-semibold pb-4 text-center">Job Title</th>
                 <th className="px-6 py-4 font-semibold pb-4">Last Applied</th>
                 <th className="px-6 py-4 font-semibold pb-4 text-center">Status</th>
                 <th className="px-6 py-4 font-semibold pb-4 text-right">Actions</th>
@@ -318,6 +318,16 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                   </button>
                 </div>
               </div>
+
+              {/* Cover Letter */}
+              {selectedCandidate.coverLetter && (
+                <div className="pt-4 border-t border-gray-100">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Cover Letter</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 leading-relaxed border border-gray-100 whitespace-pre-wrap">
+                    {selectedCandidate.coverLetter}
+                  </div>
+                </div>
+              )}
 
               {/* Application History */}
               <div className="pt-4 border-t border-gray-100">

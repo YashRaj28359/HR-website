@@ -141,7 +141,11 @@ const JobApplicationModal = ({ isOpen, onClose, job, applyToJob }) => {
               initials: (formData.firstName ? formData.firstName.charAt(0) : 'A') + (formData.lastName ? formData.lastName.charAt(0) : ''),
               bg: 'bg-green-600',
               apps: 1,
-              exp: formData.isFresher ? 'Fresher' : (formData.experience?.[0]?.companyName ? 'Experienced' : 'N/A'),
+              exp: isOldUser 
+                ? (fastFormData.relevantJobTitle || 'Not specified')
+                : (formData.isFresher 
+                    ? 'Fresher' 
+                    : (formData.experience?.[0]?.roles?.[0]?.jobTitle || formData.professionalDetails?.currentDesignation || 'Not specified')),
               currentCTC: formData.professionalDetails?.currentSalary || 'N/A',
               expectedCTC: formData.professionalDetails?.expectedSalary || 'N/A',
               summary: formData.brief || formData.professionalDetails?.majorAchievements,
@@ -211,10 +215,6 @@ const JobApplicationModal = ({ isOpen, onClose, job, applyToJob }) => {
           <label className="block text-sm font-bold text-gray-900 mb-1.5">Job title</label>
           <input type="text" className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" value={fastFormData.relevantJobTitle || ''} onChange={e => setFastFormData({...fastFormData, relevantJobTitle: e.target.value})} />
         </div>
-        <div>
-          <label className="block text-sm font-bold text-gray-900 mb-1.5">Company</label>
-          <input type="text" className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" value={fastFormData.relevantCompany || ''} onChange={e => setFastFormData({...fastFormData, relevantCompany: e.target.value})} />
-        </div>
       </div>
     </div>
   );
@@ -229,6 +229,11 @@ const JobApplicationModal = ({ isOpen, onClose, job, applyToJob }) => {
     return (
       <div className="space-y-6 animate-fade-in max-w-md mx-auto py-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-6">Add a resume</h3>
+        
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6 flex flex-col items-center">
+          <p className="text-sm text-gray-500 mb-1">Applying as</p>
+          <p className="font-bold text-gray-900">{fastFormData.relevantJobTitle || 'Not specified'}</p>
+        </div>
         
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl bg-gray-50 mb-4">
@@ -1002,18 +1007,18 @@ const JobApplicationModal = ({ isOpen, onClose, job, applyToJob }) => {
                 <LoadingReview />
               ) : isOldUser ? (
                 <>
-                  {fastStep === 1 && <FastStep1Experience />}
-                  {fastStep === 2 && <FastStep2Resume />}
-                  {fastStep === 3 && <FastStep3Review />}
+                  {fastStep === 1 && FastStep1Experience()}
+                  {fastStep === 2 && FastStep2Resume()}
+                  {fastStep === 3 && FastStep3Review()}
                 </>
               ) : (
                 <>
-                  {currentStep === 1 && <Step1BasicDetails />}
-                  {currentStep === 2 && <Step2Education />}
-                  {currentStep === 3 && <Step3Experience />}
-                  {currentStep === 4 && <Step4Professional />}
-                  {currentStep === 5 && <Step5Documents />}
-                  {currentStep === 6 && <Step6Review />}
+                  {currentStep === 1 && Step1BasicDetails()}
+                  {currentStep === 2 && Step2Education()}
+                  {currentStep === 3 && Step3Experience()}
+                  {currentStep === 4 && Step4Professional()}
+                  {currentStep === 5 && Step5Documents()}
+                  {currentStep === 6 && Step6Review()}
                 </>
               )}
 
