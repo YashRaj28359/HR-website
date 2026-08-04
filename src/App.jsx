@@ -130,7 +130,7 @@ function App() {
       </nav>
 
       {/* Main Body */}
-      <main className="flex-1 flex flex-col items-center p-6 relative w-full overflow-x-hidden">
+      <main className="flex-1 flex flex-col items-center p-6 relative w-full">
         {/* Background decorative elements */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-palette-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
         <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-palette-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
