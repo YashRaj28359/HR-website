@@ -213,7 +213,7 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
               </div>
 
               {/* Date Filter */}
-              <div className="w-[220px]">
+              <div className="w-[260px]">
                 <DateRangePicker 
                   dateRange={dateRange}
                   onRangeChange={setDateRange}
