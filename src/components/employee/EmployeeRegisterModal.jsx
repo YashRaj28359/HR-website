@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-
-const EmployeeRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }) => {
+import LocationAutocomplete from '../common/LocationAutocomplete';const EmployeeRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [mobile, setMobile] = useState('');
+  const [location, setLocation] = useState('');
 
   if (!isOpen) return null;
 
@@ -111,6 +111,16 @@ const EmployeeRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1 pl-2">Recruiters will contact you on this number</p>
+            </div>
+
+            {/* Location Input */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-bold text-gray-900">Current Location<span className="text-red-500">*</span></label>
+              <LocationAutocomplete 
+                value={location}
+                onChange={setLocation}
+                placeholder="e.g. Pune, Maharashtra"
+              />
             </div>
 
             {/* Register Button */}

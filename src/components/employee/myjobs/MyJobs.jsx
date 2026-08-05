@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import JobApplicationModal from '../JobApplicationModal';
+import EmployeeNavbar from '../../common/EmployeeNavbar';
 
 const MyJobs = ({ jobs = [] }) => {
   const navigate = useNavigate();
@@ -62,42 +63,9 @@ const MyJobs = ({ jobs = [] }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col">
-      {/* Simple Header for My Jobs */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div 
-            className="text-xl font-black text-palette-900 cursor-pointer"
-            onClick={() => navigate('/employee')}
-          >
-            DreamJob
-          </div>
-
-          <div className="flex items-center justify-end gap-6 w-auto">
-            <button className="text-gray-700 hover:text-black transition-colors" title="My jobs" onClick={() => navigate('/my-jobs')}>
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-              </svg>
-            </button>
-            <button className="text-gray-700 hover:text-black transition-colors relative" title="Notifications">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-              </svg>
-            </button>
-            <div className="relative">
-              <button 
-                onClick={() => navigate('/profile')}
-                className="text-gray-700 hover:text-black transition-colors flex items-center justify-center focus:outline-none"
-                title="Account"
-              >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white font-sans flex flex-col pb-16 md:pb-0">
+      {/* Navbar */}
+      <EmployeeNavbar />
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:px-8 lg:px-0 lg:pt-10">
@@ -131,7 +99,7 @@ const MyJobs = ({ jobs = [] }) => {
                 const appliedData = appliedJobs.find(a => String(a.id) === String(job.id));
                 return (
                   <div key={job.id} onClick={() => navigate('/employee', { state: { selectedJobId: job.id } })} className="py-6 border-b border-gray-200 flex flex-col md:flex-row md:items-start gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 rounded-xl cursor-pointer group">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-600 border border-gray-200 font-bold">
+                    <div className="hidden md:flex w-12 h-12 bg-gray-100 rounded-lg items-center justify-center flex-shrink-0 text-gray-600 border border-gray-200 font-bold">
                       {job.companyInitial}
                     </div>
                     
@@ -187,7 +155,7 @@ const MyJobs = ({ jobs = [] }) => {
                     onClick={() => navigate('/employee', { state: { selectedJobId: job.id } })}
                     className="pb-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 pt-4 rounded-xl cursor-pointer group"
                   >
-                    <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                    <div className="hidden md:flex w-12 h-12 items-center justify-center flex-shrink-0">
                       <div className="w-10 h-10 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center font-bold text-gray-600 overflow-hidden shadow-sm">
                         {job.companyInitial}
                       </div>
@@ -203,12 +171,12 @@ const MyJobs = ({ jobs = [] }) => {
                       <p className="text-[13px] text-gray-500 mt-1">Applied on DreamJob on {applied.date}</p>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-3 mt-4 md:mt-0">
-                      <div className="flex items-center gap-3">
-                        <button onClick={(e) => { e.stopPropagation(); openStatusModal(job.id); }} className="px-5 py-2 bg-white border border-blue-600 text-blue-700 font-bold rounded-xl transition-colors text-[15px] hover:bg-blue-50">
+                    <div className="flex flex-col items-end gap-3 mt-4 md:mt-0 w-full md:w-auto">
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <button onClick={(e) => { e.stopPropagation(); openStatusModal(job.id); }} className="px-5 py-2 bg-white border border-blue-600 text-blue-700 font-bold rounded-xl transition-colors text-[15px] hover:bg-blue-50 w-full md:w-auto">
                           Update status
                         </button>
-                        <button onClick={(e) => e.stopPropagation()} className="text-gray-900 hover:text-black p-1">
+                        <button onClick={(e) => e.stopPropagation()} className="text-gray-900 hover:text-black p-1 hidden md:block">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                           </svg>

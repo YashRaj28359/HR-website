@@ -1,0 +1,176 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+
+const EmployeeNavbar = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+        
+        {/* Logo / Brand */}
+        <div 
+          className="text-xl font-black text-palette-900 w-48 cursor-pointer" 
+          onClick={() => navigate('/employee')}
+        >
+          DreamJob
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-2xl flex items-center bg-gray-100 rounded-full px-2 py-1.5 focus-within:ring-2 focus-within:ring-palette-400 focus-within:bg-white transition-all hidden md:flex">
+          <div className="flex-1 flex items-center px-3 border-r border-gray-300">
+            <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Find your perfect job" 
+              className="w-full bg-transparent border-none outline-none text-sm text-gray-900 placeholder-gray-500"
+            />
+          </div>
+          <div className="flex-1 flex items-center px-3">
+            <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <input 
+              type="text" 
+              placeholder="City, county, region or remote" 
+              className="w-full bg-transparent border-none outline-none text-sm text-gray-900 placeholder-gray-500"
+            />
+          </div>
+        </div>
+
+        {/* Right Icons */}
+        <div className="flex items-center justify-end gap-4 md:gap-6 w-auto ml-4">
+          {/* My Jobs (Bookmark) */}
+          <button onClick={() => navigate('/my-jobs')} className="hidden md:block text-gray-700 hover:text-black transition-colors" title="My jobs">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+            </svg>
+          </button>
+
+          {/* Notifications (Bell) */}
+          <button className="text-gray-700 hover:text-black transition-colors relative" title="Notifications">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
+            </svg>
+            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+          </button>
+
+          {/* Profile Dropdown Toggle */}
+          <div className="relative hidden md:block" ref={dropdownRef}>
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="text-gray-700 hover:text-black transition-colors flex items-center justify-center focus:outline-none"
+              title="Account"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-3 w-80 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                <div className="p-5 border-b border-gray-200">
+                  <p className="text-base font-bold text-gray-900 truncate">yashrajsingh28359@gmail.com</p>
+                </div>
+                
+                <div className="py-2 border-b border-gray-200">
+                  <button 
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="w-full text-left px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                    </svg>
+                    <span className="text-[15px] text-gray-800">Profile</span>
+                  </button>
+                </div>
+
+                <div className="p-4 border-b border-gray-200 flex justify-center text-xs text-gray-600">
+                  <p>
+                    © 2026 DreamJob - <span className="hover:underline cursor-pointer">Terms</span> - <span className="hover:underline cursor-pointer">Accessibility</span>
+                  </p>
+                </div>
+
+                <div className="py-2">
+                  <button 
+                    onClick={() => navigate('/')}
+                    className="w-full text-center py-2 text-[15px] font-bold text-blue-700 hover:underline transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      </header>
+
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-[72px] z-[100] pb-safe">
+        {/* Home */}
+        <button onClick={() => navigate('/employee')} className={`flex flex-col items-center justify-center w-full h-full relative ${currentPath === '/employee' || currentPath === '/' ? 'text-blue-700' : 'text-gray-500'}`}>
+          {(currentPath === '/employee' || currentPath === '/') && <div className="absolute top-0 left-0 right-0 h-[3px] bg-blue-700"></div>}
+          <svg className="w-6 h-6 mb-1" fill={(currentPath === '/employee' || currentPath === '/') ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24" strokeWidth={(currentPath === '/employee' || currentPath === '/') ? '0' : '2'}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span className="text-[11px] font-medium">Home</span>
+        </button>
+
+        {/* My Jobs */}
+        <button onClick={() => navigate('/my-jobs')} className={`flex flex-col items-center justify-center w-full h-full relative ${currentPath === '/my-jobs' ? 'text-blue-700' : 'text-gray-500'}`}>
+          {currentPath === '/my-jobs' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-blue-700"></div>}
+          <svg className="w-6 h-6 mb-1" fill={currentPath === '/my-jobs' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24" strokeWidth={currentPath === '/my-jobs' ? '0' : '2'}>
+            {currentPath === '/my-jobs' ? (
+              <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            )}
+          </svg>
+          <span className="text-[11px] font-medium">My Jobs</span>
+        </button>
+
+        {/* Messages */}
+        <button onClick={() => navigate('/messages')} className={`flex flex-col items-center justify-center w-full h-full relative ${currentPath === '/messages' ? 'text-blue-700' : 'text-gray-500'}`}>
+          {currentPath === '/messages' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-blue-700"></div>}
+          <svg className="w-6 h-6 mb-1" fill={currentPath === '/messages' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24" strokeWidth={currentPath === '/messages' ? '0' : '2'}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <span className="text-[11px] font-medium">Messages</span>
+        </button>
+
+        {/* Profile */}
+        <button onClick={() => navigate('/profile')} className={`flex flex-col items-center justify-center w-full h-full relative ${currentPath === '/profile' ? 'text-blue-700' : 'text-gray-500'}`}>
+          {currentPath === '/profile' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-blue-700"></div>}
+          <svg className="w-6 h-6 mb-1" fill={currentPath === '/profile' ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24" strokeWidth={currentPath === '/profile' ? '0' : '2'}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span className="text-[11px] font-medium">Profile</span>
+        </button>
+      </div>
+    </>
+  );
+};
+
+export default EmployeeNavbar;

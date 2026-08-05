@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const EmployerRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }) => {
+import LocationAutocomplete from '../common/LocationAutocomplete';const EmployerRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }) => {
   const [step, setStep] = useState(1);
   
   // Step 1 state
@@ -19,10 +18,10 @@ const EmployerRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }
   const [industry, setIndustry] = useState('');
   const [employees, setEmployees] = useState('');
   const [designation, setDesignation] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [building, setBuilding] = useState('');
-  const [street, setStreet] = useState('');
-  const [landmark, setLandmark] = useState('');
+  
+  // Location
+  const [location, setLocation] = useState('');
+
   const [aboutCompany, setAboutCompany] = useState('');
   const [website, setWebsite] = useState('');
   const [hiringFor, setHiringFor] = useState('your_company');
@@ -365,23 +364,12 @@ const EmployerRegisterModal = ({ isOpen, onClose, onLoginClick, onLoginSuccess }
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-bold text-gray-900">Pincode</label>
-                  <input type="text" value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="Enter Pincode" className="w-full px-5 py-3.5 rounded-full border border-gray-300 focus:border-palette-400 focus:ring-1 focus:ring-palette-400 outline-none transition-all placeholder-gray-400" />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-bold text-gray-900">Building / Flat No.</label>
-                  <input type="text" value={building} onChange={(e) => setBuilding(e.target.value)} placeholder="e.g. 4th Floor, Tower B" className="w-full px-5 py-3.5 rounded-full border border-gray-300 focus:border-palette-400 focus:ring-1 focus:ring-palette-400 outline-none transition-all placeholder-gray-400" />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-bold text-gray-900">Street / Area</label>
-                  <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} placeholder="e.g. Main Street, Tech Park" className="w-full px-5 py-3.5 rounded-full border border-gray-300 focus:border-palette-400 focus:ring-1 focus:ring-palette-400 outline-none transition-all placeholder-gray-400" />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-bold text-gray-900">Landmark</label>
-                  <input type="text" value={landmark} onChange={(e) => setLandmark(e.target.value)} placeholder="e.g. Near Metro Station" className="w-full px-5 py-3.5 rounded-full border border-gray-300 focus:border-palette-400 focus:ring-1 focus:ring-palette-400 outline-none transition-all placeholder-gray-400" />
+                  <label className="block text-sm font-bold text-gray-900">Company Location</label>
+                  <LocationAutocomplete 
+                    value={location}
+                    onChange={setLocation}
+                    placeholder="e.g. Mumbai, Maharashtra"
+                  />
                 </div>
 
                 <div className="space-y-1.5">

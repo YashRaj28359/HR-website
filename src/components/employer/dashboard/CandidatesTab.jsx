@@ -24,44 +24,7 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
   const standardJobs = ['Platform Engineer - AI Trainer', 'Photographer and Editor', 'Junior Video Editor', ...jobs.map(j => j.title)];
   const allJobs = ['All Jobs', ...new Set([...standardJobs, ...(initialJob !== 'All Jobs' ? [initialJob] : [])])];
 
-  const mockCandidates = [
-    { 
-      id: 1, name: 'John Smith', email: 'john.smith@email.com', initials: 'JS', bg: 'bg-green-600', apps: 2, exp: '3 Years', date: 'May 24, 2025', status: 'New', statusColor: 'bg-blue-50 text-blue-600 border border-blue-100', currentCTC: '₹8,00,000', expectedCTC: '₹12,00,000', phone: '+91 9876543210',
-      history: [
-        { title: 'Platform Engineer - AI Trainer', status: 'Applied', date: 'May 24, 2025' },
-        { title: 'Photographer and Editor', status: 'Shortlisted', date: 'May 20, 2025' }
-      ]
-    },
-    { 
-      id: 2, name: 'Alice Martin', email: 'alice.martin@email.com', initials: 'AM', bg: 'bg-blue-600', apps: 1, exp: '2 Years', date: 'May 23, 2025', status: 'Shortlisted', statusColor: 'bg-green-50 text-green-600 border border-green-100', currentCTC: '₹6,50,000', expectedCTC: '₹9,00,000', phone: '+91 9876543211',
-      history: [
-        { title: 'Platform Engineer - AI Trainer', status: 'Shortlisted', date: 'May 23, 2025' }
-      ]
-    },
-    { 
-      id: 3, name: 'Robert Johnson', email: 'robert.j@email.com', initials: 'RJ', bg: 'bg-orange-500', apps: 3, exp: '5 Years', date: 'May 22, 2025', status: 'Shortlisted', statusColor: 'bg-green-50 text-green-600 border border-green-100', currentCTC: '₹15,00,000', expectedCTC: '₹20,00,000', phone: '+91 9876543212',
-      history: [
-        { title: 'Platform Engineer - AI Trainer', status: 'Viewed', date: 'May 22, 2025' },
-        { title: 'Photographer and Editor', status: 'Shortlisted', date: 'May 18, 2025' },
-        { title: 'Video Editor (work from office)', status: 'Rejected', date: 'May 10, 2025' }
-      ]
-    },
-    { 
-      id: 4, name: 'Neha Sharma', email: 'neha.sharma@email.com', initials: 'NS', bg: 'bg-pink-500', apps: 1, exp: '1 Year', date: 'May 21, 2025', status: 'Viewed', statusColor: 'bg-orange-50 text-orange-600 border border-orange-100', currentCTC: '₹4,00,000', expectedCTC: '₹6,00,000', phone: '+91 9876543213',
-      history: [
-        { title: 'Junior Video Editor', status: 'Viewed', date: 'May 21, 2025' }
-      ]
-    },
-    { 
-      id: 5, name: 'Daniel Williams', email: 'daniel.w@email.com', initials: 'DW', bg: 'bg-purple-600', apps: 2, exp: '4 Years', date: 'May 20, 2025', status: 'Rejected', statusColor: 'bg-red-50 text-red-600 border border-red-100', currentCTC: '₹10,50,000', expectedCTC: '₹14,00,000', phone: '+91 9876543214',
-      history: [
-        { title: 'Video Editor (work from office)', status: 'Rejected', date: 'May 20, 2025' },
-        { title: 'Platform Engineer - AI Trainer', status: 'Viewed', date: 'May 15, 2025' }
-      ]
-    },
-  ];
-
-  const candidates = [...globalCandidates, ...mockCandidates];
+  const candidates = globalCandidates;
 
   const getStatusBadgeStyles = (status) => {
     const map = {
@@ -462,6 +425,59 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                   <h2 className="text-xl font-bold text-gray-900">{selectedCandidate.name}</h2>
                   <p className="text-sm text-gray-500 mt-1">{selectedCandidate.email}</p>
                   <p className="text-xs font-semibold text-gray-400 mt-1">{selectedCandidate.phone || '+91 98765 43210'} • {selectedCandidate.location || 'Bangalore, India'}</p>
+                </div>
+
+                <div className="flex flex-col gap-4 border-b border-[#ECECEC] pb-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                        Current {selectedCandidate.salaryType === 'Monthly' ? 'Monthly Salary' : 'Annual Salary'}
+                      </h4>
+                      <p className="text-sm font-bold text-gray-900">{selectedCandidate.currentCTC || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                        Expected {selectedCandidate.salaryType === 'Monthly' ? 'Monthly Salary' : 'Annual Salary'}
+                      </h4>
+                      <p className="text-sm font-bold text-gray-900">{selectedCandidate.expectedCTC || 'Not specified'}</p>
+                    </div>
+                  </div>
+                  
+                  <hr className="border-gray-100" />
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Applied On</h4>
+                      <p className="text-sm font-bold text-gray-900">{selectedCandidate.date || 'Recently'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Resume</h4>
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewResume(selectedCandidate);
+                          }}
+                          className="text-sm font-bold text-[#29953f] hover:text-green-700 flex items-center gap-1.5 transition-colors"
+                          title="Preview Resume"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                          Preview
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            alert('Downloading Resume...');
+                          }}
+                          className="text-sm font-bold text-gray-500 hover:text-gray-900 flex items-center gap-1.5 transition-colors"
+                          title="Download Resume"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Standard sidebar content follows */}

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import LocationAutocomplete from '../../common/LocationAutocomplete';
 
 const PostJob = ({ addJob }) => {
   const navigate = useNavigate();
@@ -171,11 +172,10 @@ const PostJob = ({ addJob }) => {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">Job Location</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Bangalore" 
+                  <LocationAutocomplete 
                     value={jobData.location}
-                    onChange={(e) => setJobData({...jobData, location: e.target.value})}
+                    onChange={(val) => setJobData({...jobData, location: val})}
+                    placeholder="e.g. Bangalore, Karnataka"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#29953f] transition-colors"
                   />
                 </div>
@@ -473,7 +473,7 @@ const PostJob = ({ addJob }) => {
                     companyInitial: "M",
                     title: jobData.title || 'Untitled Job',
                     location: jobData.location || 'Not specified',
-                    salary: salaryValues[salaryType].min && salaryValues[salaryType].max ? `${cSym}${salaryValues[salaryType].min} - ${cSym}${salaryValues[salaryType].max}` : 'Not specified',
+                    salary: salaryValues[salaryType].min && salaryValues[salaryType].max ? `${cSym}${salaryValues[salaryType].min} - ${cSym}${salaryValues[salaryType].max} ${salaryType === 'Yearly' ? 'per year' : salaryType === 'Monthly' ? 'per month' : 'per hour'}` : 'Not specified',
                     employerProvided: true,
                     postedAt: "Just now",
                     easyApply: true,
@@ -486,7 +486,8 @@ const PostJob = ({ addJob }) => {
                       experience: jobData.experience || "Not specified",
                       aboutRole: jobData.about || "",
                       responsibilities: jobData.responsibilities || "",
-                      qualifications: qualification === 'Custom' ? customQualification : qualification,
+                      qualification: qualification === 'Custom' ? customQualification : (qualification === 'Select Qualification' ? '' : qualification),
+                      stream: stream === 'Custom' ? customStream : (stream === 'Select Stream' ? '' : stream),
                       category: jobData.category || "General"
                     },
                     skills: skillsList

@@ -8,11 +8,16 @@ import EmployerLoginModal from './components/employer/EmployerLoginModal';
 import EmployerRegisterModal from './components/employer/EmployerRegisterModal';
 import MyJobs from './components/employee/myjobs/MyJobs';
 import EmployerDashboard from './components/employer/dashboard/EmployerDashboard';
+import LocationAutocomplete from './components/common/LocationAutocomplete';
 import { dummyJobs } from './data/dummyJobs';
+import { dummyCandidates } from './data/dummyCandidates';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState(null); // 'employee' or 'employer'
+  const [searchJobTitle, setSearchJobTitle] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
   const [jobs, setJobs] = useState(dummyJobs);
   const [candidates, setCandidates] = useState(() => {
     try {
@@ -173,58 +178,128 @@ function App() {
     navigate('/employer');
   };
 
+  const filteredHomepageJobs = jobs.filter(job => {
+    const matchTitle = !searchJobTitle || job.title.toLowerCase().includes(searchJobTitle.toLowerCase()) || job.company.toLowerCase().includes(searchJobTitle.toLowerCase());
+    const matchLocation = !searchLocation || job.location.toLowerCase().includes(searchLocation.split(',')[0].trim().toLowerCase());
+    return matchTitle && matchLocation;
+  });
+
   return (
     <>
       <Routes>
         <Route path="/" element={
           <div className="min-h-screen bg-white font-sans text-palette-900 flex flex-col selection:bg-palette-200 selection:text-palette-900">
             {/* Navbar */}
-      <nav className="w-full px-8 py-6 flex justify-end items-center gap-4 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-palette-100 shadow-sm">
+      <nav className="w-full px-6 py-4 md:px-8 md:py-6 flex justify-between md:justify-end items-center gap-4 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-palette-100 shadow-sm">
+        {/* Mobile Logo */}
+        <div className="text-2xl font-black text-palette-900 md:hidden">
+          DreamJob
+        </div>
+
+        {/* Desktop Buttons */}
+        <div className="hidden md:flex items-center gap-4">
+          <button 
+            onClick={() => setIsEmployeeLoginOpen(true)}
+            className="px-6 py-2.5 rounded-full font-medium text-palette-900 hover:text-white hover:bg-palette-400 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-palette-200 focus:outline-none focus:ring-2 focus:ring-palette-400 focus:ring-offset-2"
+          >
+            Employee Login
+          </button>
+          <button 
+            onClick={() => setIsEmployerLoginOpen(true)}
+            className="px-6 py-2.5 rounded-full font-medium bg-palette-900 text-white hover:bg-palette-400 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-palette-200 focus:outline-none focus:ring-2 focus:ring-palette-900 focus:ring-offset-2"
+          >
+            Employer Login
+          </button>
+        </div>
+
+        {/* Mobile Hamburger */}
         <button 
-          onClick={() => setIsEmployeeLoginOpen(true)}
-          className="px-6 py-2.5 rounded-full font-medium text-palette-900 hover:text-white hover:bg-palette-400 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-palette-200 focus:outline-none focus:ring-2 focus:ring-palette-400 focus:ring-offset-2"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden text-palette-900 focus:outline-none"
         >
-          Employee Login
-        </button>
-        <button 
-          onClick={() => setIsEmployerLoginOpen(true)}
-          className="px-6 py-2.5 rounded-full font-medium bg-palette-900 text-white hover:bg-palette-400 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-palette-200 focus:outline-none focus:ring-2 focus:ring-palette-900 focus:ring-offset-2"
-        >
-          Employer Login
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isMobileMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
         </button>
       </nav>
 
+      {/* Mobile Menu Dropdown */}
+      <div 
+        className={`md:hidden bg-white border-b border-palette-100 absolute top-[72px] left-0 w-full z-40 shadow-lg transition-all duration-300 ease-in-out overflow-hidden ${
+          isMobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 border-transparent'
+        }`}
+      >
+        <div className="flex flex-col p-6 gap-4">
+          <button 
+            onClick={() => { setIsMobileMenuOpen(false); setIsEmployeeLoginOpen(true); }}
+            className="w-full px-6 py-3 rounded-xl font-bold text-palette-900 bg-palette-100/50 hover:bg-palette-100 transition-colors"
+          >
+            Employee Login
+          </button>
+          <button 
+            onClick={() => { setIsMobileMenuOpen(false); setIsEmployerLoginOpen(true); }}
+            className="w-full px-6 py-3 rounded-xl font-bold bg-palette-900 text-white hover:bg-palette-800 transition-colors"
+          >
+            Employer Login
+          </button>
+        </div>
+      </div>
+
       {/* Main Body */}
-      <main className="flex-1 flex flex-col items-center p-6 relative w-full">
+      <main className="flex-1 flex flex-col items-center p-6 relative w-full overflow-x-hidden">
         {/* Background decorative elements */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-palette-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
         <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-palette-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
         <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-palette-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
         {/* Hero Section */}
-        <div className="w-full max-w-4xl relative z-10 flex flex-col items-center text-center space-y-12 min-h-[60vh] justify-center mb-16">
-          <div className="space-y-4">
-            <h1 className="text-6xl md:text-7xl font-roboto font-black tracking-tight text-palette-900">
+        <div className="w-full max-w-4xl relative z-10 flex flex-col items-center text-center space-y-12 min-h-[45vh] justify-center mb-6 mt-8">
+          <div className="space-y-4 px-4">
+            <h1 className="text-4xl md:text-7xl font-roboto font-black tracking-tight text-palette-900 leading-tight">
               Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-palette-400 to-palette-900">Dream Job</span>
             </h1>
-            <p className="text-xl text-palette-900/70 font-medium max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-palette-900/70 font-medium max-w-2xl mx-auto">
               Discover opportunities that align with your passion and expertise.
             </p>
           </div>
 
-          <div className="w-full max-w-3xl bg-white p-3 rounded-full shadow-2xl shadow-palette-200/50 flex flex-col md:flex-row items-center gap-3 border border-palette-100 transition-all duration-500 focus-within:ring-4 focus-within:ring-palette-100 focus-within:border-palette-200 focus-within:shadow-palette-400/30">
-            <div className="flex-1 w-full flex items-center px-6 py-3 bg-palette-100/30 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-palette-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-full max-w-4xl bg-white p-2 md:p-3 rounded-3xl md:rounded-full shadow-2xl shadow-palette-200/50 flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 border border-palette-100 transition-all duration-500 z-20 relative">
+            <div className="flex-1 w-full flex items-center px-4 md:px-6 py-3 bg-palette-100/30 rounded-2xl md:rounded-full border-b md:border-b-0 md:border-r border-palette-100/50">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-palette-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input 
                 type="text" 
-                placeholder="Job title, keywords, or company..." 
-                className="w-full bg-transparent border-none outline-none px-4 text-palette-900 placeholder-palette-900/40 text-lg font-medium"
+                value={searchJobTitle}
+                onChange={(e) => setSearchJobTitle(e.target.value)}
+                placeholder="Job title, keywords..." 
+                className="w-full bg-transparent border-none outline-none px-3 md:px-4 text-palette-900 placeholder-palette-900/40 text-base md:text-lg font-medium"
               />
             </div>
             
-            <button className="w-full md:w-auto px-10 py-4 bg-palette-400 text-white rounded-full font-bold text-lg shadow-lg shadow-palette-400/40 hover:bg-palette-900 hover:shadow-xl hover:shadow-palette-900/30 transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-palette-400 focus:ring-offset-2 flex items-center justify-center gap-2 group">
+            <div className="flex-1 w-full flex items-center px-4 md:px-6 py-3 bg-palette-100/30 rounded-2xl md:rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-palette-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <LocationAutocomplete 
+                value={searchLocation}
+                onChange={setSearchLocation}
+                placeholder="City, state, or country..."
+                className="w-full bg-transparent border-none outline-none px-3 md:px-4 text-palette-900 placeholder-palette-900/40 text-base md:text-lg font-medium"
+              />
+            </div>
+            
+            <button 
+              onClick={() => {
+                // If we want to scroll to jobs, we could do it here
+                document.getElementById('jobs-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full md:w-auto px-10 py-3 md:py-4 bg-palette-400 text-white rounded-full font-bold text-base md:text-lg shadow-lg shadow-palette-400/40 hover:bg-palette-900 hover:shadow-xl hover:shadow-palette-900/30 transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-palette-400 focus:ring-offset-2 flex items-center justify-center gap-2 group">
               Search Jobs
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -234,16 +309,18 @@ function App() {
         </div>
 
         {/* Jobs List Section */}
-        <div className="w-full max-w-6xl relative z-10 flex flex-col space-y-6 pb-12 mt-4">
+        <div id="jobs-section" className="w-full max-w-6xl relative z-10 flex flex-col space-y-6 pb-12 mt-2">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
             <div>
-              <h2 className="text-3xl font-bold text-green-900 flex items-center gap-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-green-900 flex items-center gap-2">
                 Latest Opportunities 
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
               </h2>
-              <p className="text-gray-500 mt-2 font-medium">Explore the most recent jobs posted by top employers.</p>
+              <p className="text-gray-500 mt-2 font-medium">
+                {filteredHomepageJobs.length > 0 ? `Showing ${filteredHomepageJobs.length} jobs` : "No jobs found matching your criteria."}
+              </p>
             </div>
             <button className="border border-green-200 text-green-800 rounded-full px-5 py-2.5 text-sm font-semibold hover:bg-green-50 transition-colors flex items-center gap-2 shadow-sm">
               View All Jobs &rarr;
@@ -251,7 +328,7 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map(job => (
+            {filteredHomepageJobs.map(job => (
               <div key={job.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col">
                 <div className="flex items-start gap-4 mb-5">
                   <div className="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center font-bold text-green-800 text-2xl flex-shrink-0">
@@ -358,7 +435,7 @@ function App() {
               <EmployerDashboard 
                 jobs={jobs} 
                 addJob={addJob}
-                candidates={candidates}
+                candidates={[...dummyCandidates, ...candidates]}
                 updateCandidateStatus={updateCandidateStatus}
                 toggleJobStatus={toggleJobStatus}
               />

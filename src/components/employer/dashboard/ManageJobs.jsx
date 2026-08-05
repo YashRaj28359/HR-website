@@ -1,30 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
+const ManageJobs = ({ jobs = [], candidates = [], toggleJobStatus, hideHeader = false }) => {
+  const [selectedJob, setSelectedJob] = useState(null);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-10">
+    <div className={`animate-in fade-in duration-300 ${hideHeader ? '' : 'space-y-6 pb-10'}`}>
       
-      {/* Top Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-[26px] font-bold text-[#147a2e] tracking-tight">MY JOBS</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage and track all your job postings.</p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <Link 
-            to="/employer/post-job"
-            className="px-5 py-2.5 bg-[#29953f] hover:bg-green-700 text-white text-sm font-bold rounded-full transition-colors flex items-center gap-1.5 shadow-sm"
-          >
-            <span className="text-lg leading-none">+</span> Post New Job
-          </Link>
-          <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center font-bold text-green-700 shadow-sm cursor-pointer">
-            C
+      {!hideHeader && (
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-[26px] font-bold text-[#147a2e] tracking-tight">MY JOBS</h1>
+            <p className="text-gray-500 text-sm mt-1">Manage and track all your job postings.</p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/employer/post-job"
+              className="px-5 py-2.5 bg-[#29953f] hover:bg-green-700 text-white text-sm font-bold rounded-full transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              <span className="text-lg leading-none">+</span> Post New Job
+            </Link>
+            <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center font-bold text-green-700 shadow-sm cursor-pointer">
+              C
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Area */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-6">
@@ -43,8 +45,6 @@ const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
           <select className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 outline-none focus:border-[#29953f] transition-all bg-white cursor-pointer">
             <option>All Status</option>
             <option>Active</option>
-            <option>Closing Soon</option>
-            <option>Draft</option>
             <option>Closed</option>
           </select>
         </div>
@@ -57,7 +57,7 @@ const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
             const displayStatus = job.status || 'Active';
             const iconColor = job.iconColor || 'text-green-500 bg-green-50';
             const jobType = job.type || `${job.details?.employmentType || 'Full-time'} • ${job.details?.workLocation || 'Remote'} • ${job.salary || 'Not specified'}`;
-            const appsCount = job.applications || 0;
+            const appsCount = Math.max(job.applications || 0, candidates?.filter(c => c.history?.some(h => h.title === job.title))?.length || 0);
             const postedDate = job.date || job.postedAt || 'Recently';
 
             return (
@@ -78,14 +78,24 @@ const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
                 <div className="flex flex-row items-center justify-between w-full sm:w-[70%]">
                   
                   <div className="text-center w-1/4">
-                    <h4 className="font-bold text-gray-900 text-sm">{appsCount}</h4>
+                    <h4 className="font-bold text-gray-900 text-sm">
+                      {appsCount}
+                    </h4>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wide font-bold mt-0.5">Applications</p>
                   </div>
 
                   <div className="text-center w-1/4">
-                    <button onClick={() => toggleJobStatus && toggleJobStatus(job.id)} className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide cursor-pointer hover:opacity-80 transition-opacity ${statusColor}`}>
-                      {displayStatus}
-                    </button>
+                    <select 
+                      value={isClosed ? 'Closed' : 'Active'}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        if (toggleJobStatus) toggleJobStatus(job.id);
+                      }}
+                      className={`inline-flex items-center pl-2 pr-6 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide cursor-pointer hover:opacity-80 transition-opacity outline-none text-center ${statusColor}`}
+                    >
+                      <option value="Active" className="text-gray-900 bg-white font-bold">ACTIVE</option>
+                      <option value="Closed" className="text-gray-900 bg-white font-bold">CLOSED</option>
+                    </select>
                   </div>
 
                   <div className="text-center w-1/4">
@@ -95,20 +105,11 @@ const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
 
                   {/* Actions */}
                   <div className="flex items-center justify-end gap-1 w-1/4 shrink-0">
-                    <button className="p-2 text-gray-400 hover:text-[#29953f] hover:bg-green-50 rounded-lg transition-colors" title="View Candidates">
+                    <Link to="/employer/candidates" state={{ jobTitle: job.title }} className="p-2 text-gray-400 hover:text-[#29953f] hover:bg-green-50 rounded-lg transition-colors flex" title="View Candidates">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    </button>
-                    <button className="hidden lg:flex p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title="Job Info">
+                    </Link>
+                    <button onClick={() => setSelectedJob(job)} className="hidden lg:flex p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title="Job Info">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </button>
-                    <button onClick={() => toggleJobStatus && toggleJobStatus(job.id)} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title={isClosed ? 'Reopen Job' : 'Close Job'}>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        {isClosed ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        )}
-                      </svg>
                     </button>
                   </div>
 
@@ -131,6 +132,162 @@ const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
         </div>
 
       </div>
+
+      {/* Overlapping Right Sidebar Drawer for Job Details */}
+      {selectedJob && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-in fade-in duration-300"
+            onClick={() => setSelectedJob(null)}
+          ></div>
+
+          {/* Drawer */}
+          <div className="fixed inset-y-0 right-0 w-full sm:w-[500px] bg-white shadow-2xl z-50 p-6 sm:p-8 animate-in slide-in-from-right duration-300 flex flex-col h-full border-l border-gray-100">
+            
+            {/* Sidebar Header (Fixed) */}
+            <div className="flex justify-between items-start mb-6 shrink-0">
+              <h3 className="font-bold text-gray-900 text-lg">Job Details</h3>
+              <button 
+                onClick={() => setSelectedJob(null)}
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+              
+              {/* Basic Info */}
+              <div className="border-b border-gray-100 pb-6">
+                <h2 className="text-2xl font-bold text-gray-900">{selectedJob.title}</h2>
+                <div className="flex flex-wrap items-center gap-3 mt-3">
+                  <span className="inline-flex items-center justify-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold">
+                    {selectedJob.type || `${selectedJob.details?.employmentType || 'Full-time'} • ${selectedJob.details?.workLocation || 'Remote'}`}
+                  </span>
+                  <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${selectedJob.status === 'Closed' ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'}`}>
+                    {selectedJob.status || 'Active'}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 mt-6">
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Total Applicants</p>
+                    <p className="text-lg font-bold text-gray-900 mt-1">{Math.max(selectedJob.applications || 0, candidates?.filter(c => c.history?.some(h => h.title === selectedJob.title))?.length || 0)}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Posted On</p>
+                    <p className="text-sm font-bold text-gray-900 mt-2">{selectedJob.date || selectedJob.postedAt || 'Recently'}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Salary</p>
+                    <p className="text-sm font-bold text-gray-900 mt-2">{selectedJob.salary || 'Not specified'}</p>
+                  </div>
+                </div>
+              </div>
+              {/* Job Details Container */}
+              <div className="space-y-4 pt-2">
+                {selectedJob.details?.jobTitle && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Job Title:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.jobTitle}</span>
+                  </div>
+                )}
+                
+                {selectedJob.details?.employmentType && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Employment Type:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.employmentType}</span>
+                  </div>
+                )}
+                
+                {selectedJob.details?.experience && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Experience:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.experience}</span>
+                  </div>
+                )}
+
+                {selectedJob.details?.aboutRole && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">About Role:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.aboutRole}</span>
+                  </div>
+                )}
+                
+                {selectedJob.details?.responsibilities && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2 block mb-1">Responsibilities:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.responsibilities}</span>
+                  </div>
+                )}
+                
+                {selectedJob.qualifications && selectedJob.qualifications.length > 0 ? (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2 block mb-2">Skills Required:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.qualifications.map((q, idx) => (
+                        <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          {q.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : selectedJob.details?.skills ? (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2 block mb-1">Skills Required:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.skills}</span>
+                  </div>
+                ) : null}
+
+                {selectedJob.salary && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Salary:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.salary}</span>
+                  </div>
+                )}
+
+                {selectedJob.details?.qualification && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Qualification:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.qualification}</span>
+                  </div>
+                )}
+                
+                {selectedJob.details?.stream && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Stream:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.stream}</span>
+                  </div>
+                )}
+
+                {selectedJob.details?.category && (
+                  <div>
+                    <span className="text-sm font-bold text-gray-900 mr-2">Job Category:</span>
+                    <span className="text-sm text-gray-600">{selectedJob.details.category}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar Footer Actions (Fixed) */}
+            <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3 shrink-0">
+              <Link 
+                to="/employer/candidates" 
+                state={{ jobTitle: selectedJob.title }}
+                className="w-full py-3 bg-[#29953f] hover:bg-green-700 text-white font-bold rounded-xl text-sm transition-colors shadow-sm text-center"
+              >
+                View Candidates
+              </Link>
+            </div>
+
+          </div>
+        </>
+      )}
 
     </div>
   );

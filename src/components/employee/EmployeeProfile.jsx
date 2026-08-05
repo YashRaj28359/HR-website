@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LocationAutocomplete from '../common/LocationAutocomplete';
+import ImageCropperModal from '../common/ImageCropperModal';
+import EmployeeNavbar from '../common/EmployeeNavbar';
 
 const EmployeeProfile = () => {
   const navigate = useNavigate();
@@ -7,12 +10,18 @@ const EmployeeProfile = () => {
   const [expandedEduIndex, setExpandedEduIndex] = useState(0);
   const [expandedExpIndex, setExpandedExpIndex] = useState(-1);
   const [skillInput, setSkillInput] = useState('');
+  const [isMissingDetailsModalOpen, setIsMissingDetailsModalOpen] = useState(false);
+  const [modalMissingItems, setModalMissingItems] = useState([]);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [cropFile, setCropFile] = useState(null);
+  const [isEditingBasicOnMobile, setIsEditingBasicOnMobile] = useState(false);
   const [formData, setFormData] = useState({
     firstName: 'Yash Raj',
     lastName: 'Singh',
-    phone: '9399886418',
-    email: 'sonic16t@gmail.com',
+    phone: '9876543210',
+    email: 'yash@example.com',
     brief: '',
+    avatar: '',
     qualifications: [],
     isFresher: true,
     experience: [],
@@ -115,22 +124,81 @@ const EmployeeProfile = () => {
     return () => observer.disconnect();
   }, [tabs]);
 
+  const calculateProfileCompletion = () => {
+    let score = 0;
+    const missing = [];
+
+    if (formData.firstName && formData.lastName) score += 10;
+    else missing.push({ label: 'Add Full Name', points: 10, target: 'basic' });
+
+    if (formData.phone) score += 10;
+    else missing.push({ label: 'Add Phone Number', points: 10, target: 'basic' });
+
+    if (formData.professionalDetails?.currentLocation) score += 10;
+    else missing.push({ label: 'Add Current Location', points: 10, target: 'basic' });
+
+    if (formData.brief) {
+      score += 10;
+    } else {
+      missing.push({ label: 'Add Brief about yourself', target: 'basic', points: 10 });
+    }
+
+    if (formData.avatar) {
+      score += 5;
+    } else {
+      missing.push({ label: 'Add Profile Picture', target: 'basic', points: 5 });
+    }
+
+    if (formData.qualifications && formData.qualifications.length > 0) score += 15;
+    else missing.push({ label: 'Add Education', points: 15, target: 'education' });
+    
+    if (formData.isFresher || (formData.experience && formData.experience.length > 0)) score += 15;
+    else missing.push({ label: 'Add Work Experience', points: 15, target: 'experience' });
+
+    if (formData.professionalDetails?.skills) score += 10;
+    else missing.push({ label: 'Add Skills', points: 10, target: 'professional' });
+
+    if (docs.resume) {
+      score += 15;
+    } else {
+      missing.push({ label: 'Upload Resume', target: 'documents', points: 15 });
+    }
+
+    return { score, missing };
+  };
+
+  const { score, missing } = calculateProfileCompletion();
+  const dashoffset = 377 - (377 * score / 100);
+
   const renderHeader = () => (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col md:flex-row gap-8 items-start md:items-center">
+    <>
+    {/* DESKTOP HEADER */}
+    <div className="hidden md:flex bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex-row gap-8 items-center">
       
       {/* Left: Avatar with progress ring */}
-      <div className="relative flex-shrink-0">
-        <div className="w-32 h-32 rounded-full border-4 border-[#F3F4F6] flex items-center justify-center bg-[#E5E7EB] overflow-hidden">
-          <svg className="w-20 h-20 text-white translate-y-3" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
+      <div className="relative flex-shrink-0 group">
+        <div className="cursor-pointer block relative z-10" onClick={() => setIsAvatarModalOpen(true)}>
+          <div className="w-32 h-32 rounded-full border-4 border-[#F3F4F6] flex items-center justify-center bg-[#E5E7EB] overflow-hidden group-hover:opacity-90 transition-opacity relative">
+            {formData.avatar ? (
+              <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <svg className="w-20 h-20 text-white translate-y-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            )}
+          </div>
+
+          {/* Edit Pen Icon */}
+          <div className="absolute bottom-1 right-1 bg-white p-1.5 rounded-full shadow-md border border-gray-100 text-gray-500 group-hover:text-green-600 group-hover:bg-green-50 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+          </div>
         </div>
-        {/* SVG overlay for circular progress (approx 63%) */}
-        <svg className="absolute inset-0 w-32 h-32 transform -rotate-90 pointer-events-none">
-           <circle cx="64" cy="64" r="60" stroke="#F59E0B" strokeWidth="4" fill="none" strokeDasharray="377" strokeDashoffset="140" strokeLinecap="round" />
+        {/* SVG overlay for circular progress */}
+        <svg className="absolute inset-0 w-32 h-32 transform -rotate-90 pointer-events-none transition-all duration-1000 ease-out z-0">
+           <circle cx="64" cy="64" r="60" stroke={score === 100 ? "#16a34a" : "#F59E0B"} strokeWidth="4" fill="none" strokeDasharray="377" strokeDashoffset={dashoffset} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
         </svg>
-        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-3 py-0.5 rounded-full text-xs font-bold text-orange-500 border border-gray-100 shadow-md">
-          63%
+        <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-3 py-0.5 rounded-full text-xs font-bold border border-gray-100 shadow-md transition-colors duration-1000 z-20 ${score === 100 ? 'text-green-600' : 'text-orange-500'}`}>
+          {score}%
         </div>
       </div>
 
@@ -176,61 +244,395 @@ const EmployeeProfile = () => {
       {/* Right: Missing details widget */}
       <div className="w-full md:w-80 bg-[#FFF8EE] rounded-xl p-6 border border-orange-100 space-y-5 flex-shrink-0 self-stretch flex flex-col justify-between">
         <ul className="space-y-4 text-sm font-semibold text-gray-700">
-          <li className="flex items-center justify-between">
-            <span className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500 shadow-sm">
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              </div>
-              Add resume
-            </span>
-            <span className="text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-100 text-xs shadow-sm">↑ 10%</span>
-          </li>
-          <li className="flex items-center justify-between">
-            <span className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500 shadow-sm">
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-              </div>
-              Add department
-            </span>
-            <span className="text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-100 text-xs shadow-sm">↑ 10%</span>
-          </li>
-          <li className="flex items-center justify-between">
-            <span className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500 shadow-sm">
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
-              </div>
-              Add cover letter
-            </span>
-            <span className="text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-100 text-xs shadow-sm">↑ 5%</span>
-          </li>
+          {missing.slice(0, 3).map((item, idx) => (
+            <li key={idx} className="flex items-center justify-between cursor-pointer group" onClick={() => document.getElementById(item.target)?.scrollIntoView({ behavior: 'smooth' })}>
+              <span className="flex items-center gap-3 group-hover:text-green-600 transition-colors">
+                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center border border-gray-200 text-gray-500 shadow-sm group-hover:border-green-300 group-hover:text-green-600 transition-colors">
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                </div>
+                {item.label}
+              </span>
+              <span className="text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-100 text-xs shadow-sm">↑ {item.points}%</span>
+            </li>
+          ))}
+          {missing.length === 0 && (
+            <li className="text-green-600 font-bold text-center py-8">
+              <span className="text-3xl block mb-2">🎉</span>
+              Your profile is 100% complete!
+            </li>
+          )}
         </ul>
-        <button className="w-full py-2.5 mt-2 bg-[#F05A41] hover:bg-[#d94a32] text-white font-bold rounded-full transition-all shadow-lg shadow-[#F05A41]/30 hover:shadow-[#F05A41]/50 transform hover:-translate-y-0.5">
-          Add 6 missing details
-        </button>
+        {missing.length > 0 && (
+          <button onClick={() => {
+            setModalMissingItems(missing);
+            setIsMissingDetailsModalOpen(true);
+          }} className="w-full py-2.5 mt-2 bg-[#F05A41] hover:bg-[#d94a32] text-white font-bold rounded-full transition-all shadow-lg shadow-[#F05A41]/30 hover:shadow-[#F05A41]/50 transform hover:-translate-y-0.5">
+            Add {missing.length} missing detail{missing.length > 1 ? 's' : ''}
+          </button>
+        )}
       </div>
 
     </div>
+
+    {/* MOBILE HEADER */}
+    <div className="md:hidden flex flex-col px-4 pt-8 pb-4 bg-[#F8F9FA]">
+      
+      {/* 1. Avatar Section */}
+      <div className="mb-5">
+        <div className="relative inline-block" onClick={() => setIsAvatarModalOpen(true)}>
+          <div className="w-[104px] h-[104px] rounded-full bg-[#EAEAF0] flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+            {formData.avatar ? (
+              <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <svg className="w-16 h-16 text-white translate-y-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            )}
+          </div>
+          {/* Blue + Icon */}
+          <div className="absolute bottom-0 right-0 bg-[#2563EB] rounded-full w-[34px] h-[34px] flex items-center justify-center border-[3px] border-white text-white">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Name & Subtitle */}
+      <div className="mb-5">
+        <h1 className="text-[28px] font-bold text-gray-900 leading-tight mb-1.5 tracking-tight">
+          {formData.firstName} {formData.lastName}
+        </h1>
+        <p className="text-[16px] text-gray-600">
+          {(() => {
+            const eduList = formData.qualifications || [];
+            let highestEdu = null;
+            if (eduList.length > 0) {
+              const order = ['10th', '12th', 'Graduation/Diploma', 'Masters/Post-Graduation', 'Doctorate/PhD'];
+              let maxIdx = -1;
+              eduList.forEach(q => {
+                const idx = order.indexOf(q.educationType);
+                if (idx > maxIdx) {
+                  maxIdx = idx;
+                  highestEdu = q;
+                }
+              });
+            }
+            
+            let eduStr = null;
+            if (highestEdu) {
+              if (highestEdu.educationType === '10th') eduStr = 'Class X';
+              else if (highestEdu.educationType === '12th') eduStr = 'Class XII';
+              else eduStr = highestEdu.course || highestEdu.educationType;
+            }
+            
+            const locStr = formData.professionalDetails?.currentLocation;
+            
+            const parts = [];
+            if (eduStr) parts.push(eduStr);
+            if (locStr) parts.push(locStr);
+            
+            return parts.length > 0 ? parts.join(', ') : 'Add education & location to complete profile';
+          })()}
+        </p>
+      </div>
+
+      {/* 3. Progress Bar */}
+      <div className="mb-2 flex items-center gap-4">
+        <div className="flex-1 h-1.5 bg-[#EAEAF0] rounded-full overflow-hidden">
+          <div className="h-full bg-[#F59E0B] rounded-full" style={{ width: `${score}%` }}></div>
+        </div>
+        <span className="text-[#F59E0B] font-bold text-[15px]">{score}%</span>
+      </div>
+      <p className="text-[13px] text-gray-500 mb-8">Last updated today</p>
+
+      {/* 4. Basic Details Card */}
+      <div className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-[22px] font-bold text-[#111827]">Basic details</h2>
+          {!isEditingBasicOnMobile && (
+            <button className="text-[#6B7280] hover:text-[#2563EB] transition-colors" onClick={() => setIsEditingBasicOnMobile(true)}>
+              <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {isEditingBasicOnMobile ? (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-1.5">First Name <span className="text-red-500">*</span></label>
+              <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-1.5">Last Name <span className="text-red-500">*</span></label>
+              <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={formData.lastName || ''} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-1.5">Phone Number <span className="text-red-500">*</span></label>
+              <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-1.5">Email (Read Only)</label>
+              <input type="text" disabled className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed" value={formData.email || ''} />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Location <span className="text-red-500">*</span></label>
+              <LocationAutocomplete 
+                value={formData.professionalDetails?.currentLocation || ''}
+                onChange={(val) => setP('currentLocation', val)}
+                placeholder="e.g. Pune, Maharashtra"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-gray-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-1.5">Brief about yourself</label>
+              <textarea 
+                rows="3"
+                placeholder="I am a passionate professional..."
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all custom-scrollbar" 
+                value={formData.brief || ''} 
+                onChange={e => setFormData({...formData, brief: e.target.value})} 
+              ></textarea>
+            </div>
+            <div className="pt-2">
+              <button 
+                onClick={() => setIsEditingBasicOnMobile(false)}
+                className="w-full py-3 bg-[#2563EB] text-white font-bold rounded-xl shadow-md"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4.5">
+            <div className="flex items-center gap-4 mb-4">
+              <svg className="w-[20px] h-[20px] text-[#6B7280] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <span className="text-[16px] text-[#374151]">{formData.professionalDetails?.currentLocation || 'Pune, INDIA'}</span>
+            </div>
+            
+            <div className="flex items-center gap-4 mb-4">
+              <svg className="w-[20px] h-[20px] text-[#6B7280] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              <span className="text-[16px] text-[#374151]">{formData.isFresher ? 'Fresher' : 'Experienced'}</span>
+            </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <svg className="w-[20px] h-[20px] text-[#6B7280] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              <div className="flex items-center gap-2">
+                <span className="text-[16px] text-[#374151] border-b border-[#9CA3AF] pb-[1px]">{formData.email}</span>
+                <svg className="w-[18px] h-[18px] text-[#10B981]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <svg className="w-[20px] h-[20px] text-[#6B7280] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              <div className="flex items-center gap-2">
+                <span className="text-[16px] text-[#374151]">{formData.phone || '9399886418'}</span>
+                {(formData.phone || true) && <svg className="w-[18px] h-[18px] text-[#10B981]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+    </>
   );
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col font-sans pb-12">
       {/* Navbar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-[1200px] mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="text-xl font-black text-palette-900 cursor-pointer" onClick={() => navigate('/employee')}>
-            DreamJob
+      <EmployeeNavbar />
+
+      <ImageCropperModal 
+        isOpen={!!cropFile} 
+        onClose={() => setCropFile(null)} 
+        imageFile={cropFile} 
+        onSave={(croppedUrl) => {
+          setFormData({...formData, avatar: croppedUrl});
+          setCropFile(null);
+        }}
+        onChangePhoto={() => {
+          setCropFile(null);
+          setIsAvatarModalOpen(true);
+        }}
+      />
+
+      {/* Avatar Upload Modal */}
+      {isAvatarModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setIsAvatarModalOpen(false)}>
+          <div className="bg-white rounded-3xl p-10 w-full max-w-2xl shadow-2xl animate-slide-up relative text-center" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setIsAvatarModalOpen(false)} className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            
+            {formData.avatar ? (
+              <>
+                <h3 className="text-[1.75rem] font-bold text-gray-900 mb-8 mt-4 tracking-tight">Profile photo upload</h3>
+                
+                <div className="flex justify-center mb-8">
+                  <div className="w-40 h-40 rounded-full border border-gray-200 overflow-hidden shadow-sm">
+                    <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+
+                <label className="inline-block cursor-pointer mb-4">
+                  <span className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full transition-all shadow-md inline-block text-lg">
+                    Replace Photo
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={e => {
+                    if (e.target.files[0]) {
+                      setCropFile(e.target.files[0]);
+                      setIsAvatarModalOpen(false);
+                    }
+                  }} />
+                </label>
+                
+                <div className="text-lg text-gray-500 mb-4">
+                  or <button onClick={() => {
+                    setFormData({...formData, avatar: ''});
+                    setIsAvatarModalOpen(false);
+                  }} className="text-green-600 font-semibold hover:underline">Delete</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-[1.75rem] font-bold text-gray-900 mb-3 mt-4 tracking-tight">Profile photo upload</h3>
+                <p className="text-gray-600 text-lg mb-10">Profile with photo has 40% higher chances of getting noticed by recruiters.</p>
+                
+                <label className="inline-block cursor-pointer">
+                  <span className="bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-10 rounded-full transition-all shadow-md inline-block text-lg">
+                    Upload photo
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={e => {
+                    if (e.target.files[0]) {
+                      setCropFile(e.target.files[0]);
+                      setIsAvatarModalOpen(false);
+                    }
+                  }} />
+                </label>
+              </>
+            )}
+            
+            <div className="mt-8 text-[15px] text-[#6b7280]">
+              <p>Supported file format: png, jpg, jpeg, gif - upto 2MB</p>
+              <a href="#" onClick={e => e.preventDefault()} className="text-green-600 hover:underline mt-2 inline-block">Terms of services</a>
+            </div>
           </div>
-          <button 
-            onClick={() => navigate('/employee')}
-            className="text-gray-500 hover:text-gray-900 font-semibold text-sm flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Dashboard
-          </button>
         </div>
-      </header>
+      )}
+
+      {/* Missing Details Modal */}
+      {isMissingDetailsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setIsMissingDetailsModalOpen(false)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Complete Your Profile</h3>
+                <p className="text-sm text-gray-500 mt-1">Fill in the details below to reach 100%</p>
+              </div>
+              <button onClick={() => setIsMissingDetailsModalOpen(false)} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors self-start">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 space-y-4">
+              {modalMissingItems.map((item, idx) => {
+                const completed = !missing.some(m => m.label === item.label);
+                return (
+                  <div key={idx} className={`p-4 border rounded-xl transition-all ${completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className={`font-bold flex items-center gap-2 ${completed ? 'text-green-700' : 'text-gray-800'}`}>
+                        {completed ? (
+                          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center"></div>
+                        )}
+                        {item.label}
+                      </h4>
+                      <span className={`${completed ? 'text-green-700 bg-green-100' : 'text-orange-600 bg-orange-100'} font-bold px-2 py-1 rounded text-xs shadow-sm`}>
+                        +{item.points}%
+                      </span>
+                    </div>
+
+                    <div className="pl-7">
+                      {item.label === 'Add Full Name' && (
+                        <div className="flex gap-3">
+                          <input type="text" placeholder="First Name" className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-green-500" value={formData.firstName || ''} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+                          <input type="text" placeholder="Last Name" className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-green-500" value={formData.lastName || ''} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+                        </div>
+                      )}
+
+                      {item.label === 'Add Phone Number' && (
+                        <input type="text" placeholder="Phone Number" className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-green-500" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                      )}
+
+                      {item.label === 'Add Current Location' && (
+                        <LocationAutocomplete 
+                          value={formData.professionalDetails?.currentLocation || ''}
+                          onChange={(val) => setP('currentLocation', val)}
+                          placeholder="e.g. Pune, Maharashtra"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-green-500"
+                        />
+                      )}
+
+                      {item.label === 'Add Brief about yourself' && (
+                        <textarea rows="2" placeholder="Brief about yourself..." className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-green-500 custom-scrollbar" value={formData.brief || ''} onChange={e => setFormData({...formData, brief: e.target.value})} />
+                      )}
+
+                      {item.label === 'Add Skills' && (
+                        <div>
+                          <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-green-500" placeholder="Type a skill and hit Enter" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={handleSkillKeyDown} />
+                        </div>
+                      )}
+
+                      {item.label === 'Upload Resume' && (
+                        <input type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer" onChange={e => setDoc('resume', e.target.files[0]?.name || '')} />
+                      )}
+
+                      {item.label === 'Add Profile Picture' && (
+                        <input type="file" accept="image/*" className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer" onChange={e => {
+                          if (e.target.files[0]) {
+                            setCropFile(e.target.files[0]);
+                            setIsMissingDetailsModalOpen(false);
+                          }
+                        }} />
+                      )}
+
+                      {(item.label === 'Add Education' || item.label === 'Add Work Experience') && (
+                        <button 
+                          onClick={() => {
+                            setIsMissingDetailsModalOpen(false);
+                            setTimeout(() => document.getElementById(item.target)?.scrollIntoView({ behavior: 'smooth' }), 150);
+                          }}
+                          className="w-full py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          Go to {item.target} section &rarr;
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+            <button onClick={() => setIsMissingDetailsModalOpen(false)} className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white font-bold rounded-full transition-all shadow-md">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-[1200px] w-full mx-auto px-4 mt-6 space-y-6">
+        {/* Back Button */}
+        <div className="hidden md:block">
+          <button 
+            onClick={() => navigate('/employee')}
+            className="text-gray-500 hover:text-gray-900 font-semibold text-sm flex items-center gap-2 transition-colors w-fit"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Back to Home
+          </button>
+        </div>
+
         {renderHeader()}
 
         <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -262,7 +664,7 @@ const EmployeeProfile = () => {
           <div className="flex-1 animate-fade-in space-y-6 min-h-[500px]">
 
             {/* Continuous Sections */}
-            <section id="basic" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+            <section id="basic" className="hidden md:block scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
               <div className="mb-6 pb-2 border-b border-gray-100">
                 <h3 className="text-xl font-bold text-gray-800">Basic Details</h3>
               </div>
@@ -282,6 +684,15 @@ const EmployeeProfile = () => {
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Email (Read Only)</label>
                   <input type="text" disabled className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed" value={formData.email || ''} />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Location <span className="text-red-500">*</span></label>
+                  <LocationAutocomplete 
+                    value={formData.professionalDetails?.currentLocation || ''}
+                    onChange={(val) => setP('currentLocation', val)}
+                    placeholder="e.g. Pune, Maharashtra"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-gray-400"
+                  />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Brief about yourself</label>
@@ -678,13 +1089,72 @@ const EmployeeProfile = () => {
                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Location <span className="text-red-500">*</span></label>
                   <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentLocation || ''} onChange={e => setP('currentLocation', e.target.value)} />
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Salary <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentSalary || ''} onChange={e => setP('currentSalary', e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Expected Salary <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.expectedSalary || ''} onChange={e => setP('expectedSalary', e.target.value)} />
+                <div className="col-span-2 mt-2">
+                  <div className="mb-6 flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold text-gray-700 mb-1.5">Salary Type</label>
+                      <div className="relative w-full">
+                        <select 
+                          value={p.salaryType || 'Yearly'}
+                          onChange={(e) => setP('salaryType', e.target.value)}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all appearance-none bg-white cursor-pointer"
+                        >
+                          <option value="Yearly">Yearly</option>
+                          <option value="Monthly">Monthly</option>
+                          <option value="Hourly">Hourly</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold text-gray-700 mb-1.5">Currency</label>
+                      <div className="relative w-full">
+                        <select 
+                          value={p.currency || 'INR'}
+                          onChange={(e) => setP('currency', e.target.value)}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all appearance-none bg-white cursor-pointer"
+                        >
+                          <option value="INR">INR (₹)</option>
+                          <option value="USD">USD ($)</option>
+                          <option value="EUR">EUR (€)</option>
+                          <option value="GBP">GBP (£)</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                      {p.salaryType === 'Monthly' ? 'Monthly Salary' : 'Annual Salary'}
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <input 
+                          type="text" 
+                          placeholder={p.salaryType === 'Monthly' ? '₹40,000' : '₹5,00,000'}
+                          value={p.currentSalary || ''}
+                          onChange={(e) => setP('currentSalary', e.target.value)}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all placeholder:text-gray-400 font-medium"
+                        />
+                        <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-semibold uppercase tracking-wide">Current</p>
+                      </div>
+                      <div>
+                        <input 
+                          type="text" 
+                          placeholder={p.salaryType === 'Monthly' ? '₹60,000' : '₹8,00,000'}
+                          value={p.expectedSalary || ''}
+                          onChange={(e) => setP('expectedSalary', e.target.value)}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all placeholder:text-gray-400 font-medium"
+                        />
+                        <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-semibold uppercase tracking-wide">Expected</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Skills <span className="text-red-500">*</span></label>
@@ -708,13 +1178,36 @@ const EmployeeProfile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="p-4 border border-gray-200 rounded-xl">
                         <label className="block text-sm font-bold text-gray-900 mb-3">Upload Resume <span className="text-red-500">*</span></label>
-                        <input type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-palette-50 file:text-palette-900 hover:file:bg-palette-100 cursor-pointer" onChange={e => setDoc('resume', e.target.files[0]?.name || '')} />
-                        {docs.resume && <p className="text-sm text-gray-600 mt-3 flex items-center gap-2"><svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> {docs.resume}</p>}
+                        <input key={docs.resume ? 'resume-has' : 'resume-empty'} type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-palette-50 file:text-palette-900 hover:file:bg-palette-100 cursor-pointer" onChange={e => setDoc('resume', e.target.files[0]?.name || '')} />
+                        {docs.resume && (
+                          <div className="flex items-center justify-between mt-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                            <p className="text-sm text-gray-700 flex items-center gap-2 truncate">
+                              <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> 
+                              <span className="truncate">{docs.resume}</span>
+                            </p>
+                            <button onClick={() => setDoc('resume', '')} className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50 transition-colors flex-shrink-0" title="Remove Resume">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <div className="p-4 border border-gray-200 rounded-xl">
-                        <label className="block text-sm font-bold text-gray-900 mb-3">Upload Cover Letter <span className="text-red-500">*</span></label>
-                        <input type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-palette-50 file:text-palette-900 hover:file:bg-palette-100 cursor-pointer" onChange={e => setDoc('coverLetter', e.target.files[0]?.name || '')} />
-                        {docs.coverLetter && <p className="text-sm text-gray-600 mt-3 flex items-center gap-2"><svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> {docs.coverLetter}</p>}
+                        <label className="flex items-center justify-between text-sm font-bold text-gray-900 mb-3">
+                          <span>Upload Cover Letter</span>
+                          <span className="text-gray-400 font-medium text-xs">(Optional)</span>
+                        </label>
+                        <input key={docs.coverLetter ? 'cl-has' : 'cl-empty'} type="file" accept=".pdf,.doc,.docx" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-palette-50 file:text-palette-900 hover:file:bg-palette-100 cursor-pointer" onChange={e => setDoc('coverLetter', e.target.files[0]?.name || '')} />
+                        {docs.coverLetter && (
+                          <div className="flex items-center justify-between mt-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                            <p className="text-sm text-gray-700 flex items-center gap-2 truncate">
+                              <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> 
+                              <span className="truncate">{docs.coverLetter}</span>
+                            </p>
+                            <button onClick={() => setDoc('coverLetter', '')} className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50 transition-colors flex-shrink-0" title="Remove Cover Letter">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                 </div>
