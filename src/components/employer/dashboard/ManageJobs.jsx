@@ -56,7 +56,7 @@ const ManageJobs = ({ jobs = [], toggleJobStatus }) => {
             const statusColor = job.statusColor || (isClosed ? 'bg-gray-100 text-gray-700' : 'bg-green-100 text-green-700');
             const displayStatus = job.status || 'Active';
             const iconColor = job.iconColor || 'text-green-500 bg-green-50';
-            const jobType = job.type || `${job.details?.employmentType || 'Full-time'} • ${job.details?.workLocation || 'Remote'}`;
+            const jobType = job.type || `${job.details?.employmentType || 'Full-time'} • ${job.details?.workLocation || 'Remote'} • ${job.salary || 'Not specified'}`;
             const appsCount = job.applications || 0;
             const postedDate = job.date || job.postedAt || 'Recently';
 
