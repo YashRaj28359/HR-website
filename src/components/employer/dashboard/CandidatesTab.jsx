@@ -431,7 +431,7 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                   </div>
                 </div>
               );
-            })}
+            }))}
           </div>
 
           {/* Pagination */}
