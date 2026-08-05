@@ -84,19 +84,6 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
 
   const statusOptions = ['New', 'Viewed', 'Shortlisted', 'Rejected'];
 
-  const filteredCandidates = candidates
-    .filter(c => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      return c.name?.toLowerCase().includes(query) || c.email?.toLowerCase().includes(query);
-    })
-    .filter(c => selectedJob === 'All Jobs' || c.history?.some(h => h.title === selectedJob))
-    .filter(c => {
-      if (appsFilter === 'All') return true;
-      const appCount = c.history?.length || 1;
-      if (appsFilter === '3+') return appCount >= 3;
-      return appCount.toString() === appsFilter;
-    })
   const filteredCandidates = candidates.map(candidate => {
     // 1. Application-level filtering
     const matchingHistory = (candidate.history || []).filter(app => {
