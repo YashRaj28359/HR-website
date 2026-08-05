@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const DashboardOverview = ({ jobs = [] }) => {
+const DashboardOverview = ({ jobs = [], toggleJobStatus }) => {
   const [selectedJob, setSelectedJob] = useState(null);
 
   const chartData = [
@@ -128,7 +128,11 @@ const DashboardOverview = ({ jobs = [] }) => {
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <select className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 outline-none focus:border-[#29953f] transition-all bg-white cursor-pointer ml-auto">
+                      <select 
+                        value={job.status === 'Closed' ? 'close' : 'active'}
+                        onChange={() => toggleJobStatus && toggleJobStatus(job.id)}
+                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 outline-none focus:border-[#29953f] transition-all bg-white cursor-pointer ml-auto"
+                      >
                         <option value="active">Active</option>
                         <option value="close">Close</option>
                       </select>

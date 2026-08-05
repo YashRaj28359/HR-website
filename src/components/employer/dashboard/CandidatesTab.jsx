@@ -124,17 +124,39 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm font-semibold text-gray-700 text-center">{cand.apps}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-600 text-center">{cand.exp}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-600 text-center">
+                    {selectedJob !== 'All Jobs' ? selectedJob : (cand.history?.map(h => h.title).join(', ') || 'Not specified')}
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-500 font-medium">{cand.date}</td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide min-w-[100px] ${cand.statusColor}`}>
-                      {cand.status}
-                    </span>
+                    {(() => {
+                      let displayStatus = cand.status;
+                      let displayColor = cand.statusColor;
+                      
+                      if (selectedJob !== 'All Jobs' && cand.history) {
+                        const specificHistory = cand.history.find(h => h.title === selectedJob);
+                        if (specificHistory) {
+                          displayStatus = specificHistory.status;
+                          displayColor = specificHistory.color;
+                        }
+                      }
+                      
+                      return (
+                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide min-w-[100px] ${displayColor}`}>
+                          {displayStatus}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button 
-                        onClick={() => setSelectedCandidate(cand)}
+                        onClick={() => {
+                          setSelectedCandidate(cand);
+                          if (cand.status === 'New' || cand.status === 'Applied') {
+                            updateCandidateStatus(cand.id, 'Viewed');
+                          }
+                        }}
                         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
                         title="View Profile"
                       >
@@ -207,29 +229,6 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                 <p className="text-sm text-gray-500 mt-1">{selectedCandidate.email}</p>
                 <p className="text-xs font-semibold text-gray-400 mt-1">{selectedCandidate.phone || '+91 98765 43210'} • {selectedCandidate.location || 'Bangalore, India'}</p>
                 
-                <div className="mt-4 flex items-center gap-2">
-                  <span className={`inline-flex items-center justify-center px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wide ${selectedCandidate.statusColor}`}>
-                    {selectedCandidate.status}
-                  </span>
-                  <select 
-                    className="px-3 py-1.5 border border-gray-200 rounded text-xs font-bold text-gray-600 outline-none focus:border-[#29953f] transition-all bg-white cursor-pointer"
-                    value=""
-                    onChange={(e) => {
-                      const newStatus = e.target.value;
-                      if (updateCandidateStatus) {
-                        updateCandidateStatus(selectedCandidate.id, newStatus);
-                        let color = 'bg-blue-50 text-blue-600 border border-blue-100';
-                        if (newStatus.toLowerCase() === 'shortlisted') color = 'bg-green-50 text-green-600 border border-green-100';
-                        else if (newStatus.toLowerCase() === 'rejected') color = 'bg-red-50 text-red-600 border border-red-100';
-                        setSelectedCandidate({...selectedCandidate, status: newStatus, statusColor: color});
-                      }
-                    }}
-                  >
-                    <option value="" disabled>Update Status</option>
-                    <option value="Shortlisted">Shortlisted</option>
-                    <option value="Rejected">Rejected</option>
-                  </select>
-                </div>
               </div>
 
               {/* About */}
@@ -260,11 +259,18 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                 <div className="space-y-4 ml-2">
                   {selectedCandidate.experience?.length > 0 && selectedCandidate.experience[0].companyName ? (
                     selectedCandidate.experience.map((exp, i) => (
-                      <div key={i} className="relative pl-4 border-l-2 border-gray-100">
-                        <div className="absolute w-2.5 h-2.5 bg-green-500 rounded-full -left-[5px] top-1.5 ring-4 ring-white"></div>
-                        <h5 className="font-bold text-gray-900 text-sm">{exp.roles?.[0]?.jobTitle || 'Role'}</h5>
-                        <p className="text-xs text-[#29953f] font-bold mb-1">{exp.companyName || 'Company'} • {exp.roles?.[0]?.joiningDate || 'Date'}</p>
-                        <p className="text-xs text-gray-500">{exp.roles?.[0]?.roleDescription || 'No description provided.'}</p>
+                      <div key={i} className="mb-4">
+                        <h5 className="font-bold text-gray-900 text-sm mb-2">{exp.companyName || 'Company'}</h5>
+                        <div className="border-l-2 border-gray-100 ml-1.5 space-y-4 py-1">
+                          {(exp.roles && exp.roles.length > 0 ? exp.roles : [{}]).map((role, rIndex) => (
+                            <div key={rIndex} className="relative pl-4">
+                              <div className="absolute w-2.5 h-2.5 bg-green-500 rounded-full -left-[6px] top-1.5 ring-4 ring-white"></div>
+                              <h5 className="font-bold text-gray-900 text-sm">{role.jobTitle || 'Role'}</h5>
+                              <p className="text-xs text-[#29953f] font-bold mb-1">{role.joiningDate || 'Date'}</p>
+                              <p className="text-xs text-gray-500">{role.roleDescription || 'No description provided.'}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -340,10 +346,34 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                         <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wide min-w-[80px] ${hist.color}`}>
                           {hist.status}
                         </span>
-                        <select className="px-2 py-1 border border-gray-200 rounded text-xs font-bold text-gray-600 outline-none focus:border-[#29953f] transition-all bg-white cursor-pointer">
-                          <option value="" disabled selected>Update</option>
-                          <option value="shortlisted">Shortlist</option>
-                          <option value="rejected">Reject</option>
+                        <select 
+                          className="px-2 py-1 border border-gray-200 rounded text-xs font-bold text-gray-600 outline-none focus:border-[#29953f] transition-all bg-white cursor-pointer"
+                          value={['Shortlisted', 'Rejected'].includes(hist.status) ? hist.status : ""}
+                          onChange={(e) => {
+                            const newStatus = e.target.value;
+                            let color = 'bg-blue-50 text-blue-600 border border-blue-100';
+                            if (newStatus.toLowerCase() === 'shortlisted') color = 'bg-green-50 text-green-600 border border-green-100';
+                            else if (newStatus.toLowerCase() === 'rejected') color = 'bg-red-50 text-red-600 border border-red-100';
+                            
+                            const newHistory = selectedCandidate.history.map((h, index) => 
+                              index === i ? { ...h, status: newStatus, color } : h
+                            );
+                            
+                            if (updateCandidateStatus) {
+                              updateCandidateStatus(selectedCandidate.id, newStatus, hist.title);
+                            }
+                            
+                            setSelectedCandidate({
+                              ...selectedCandidate,
+                              history: newHistory,
+                              status: newStatus, // Update top badge as well
+                              statusColor: color
+                            });
+                          }}
+                        >
+                          <option value="" disabled>Update</option>
+                          <option value="Shortlisted">Shortlisted</option>
+                          <option value="Rejected">Rejected</option>
                         </select>
                       </div>
                     </div>

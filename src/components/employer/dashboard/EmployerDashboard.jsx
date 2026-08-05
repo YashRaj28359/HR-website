@@ -7,7 +7,7 @@ import CandidatesTab from './CandidatesTab';
 import ApplicationsTab from './ApplicationsTab';
 import CompanyProfileTab from './CompanyProfileTab';
 
-const EmployerDashboard = ({ jobs, addJob, candidates, updateCandidateStatus }) => {
+const EmployerDashboard = ({ onLogout, jobs, addJob, candidates, updateCandidateStatus, toggleJobStatus }) => {
   const location = useLocation();
 
   const navItems = [
@@ -67,9 +67,9 @@ const EmployerDashboard = ({ jobs, addJob, candidates, updateCandidateStatus }) 
         <div className="flex-1 overflow-y-auto p-10 relative">
           <div className="max-w-[1200px] mx-auto w-full">
             <Routes>
-              <Route path="/" element={<DashboardOverview jobs={jobs} />} />
+              <Route path="/" element={<DashboardOverview jobs={jobs} toggleJobStatus={toggleJobStatus} />} />
               <Route path="/post-job" element={<PostJob addJob={addJob} />} />
-              <Route path="/manage-jobs" element={<ManageJobs />} />
+              <Route path="/manage-jobs" element={<ManageJobs jobs={jobs} toggleJobStatus={toggleJobStatus} />} />
               <Route path="/candidates" element={<CandidatesTab candidates={candidates} jobs={jobs} updateCandidateStatus={updateCandidateStatus} />} />
               <Route path="/applications" element={<ApplicationsTab />} />
               <Route path="/company-profile" element={<CompanyProfileTab />} />

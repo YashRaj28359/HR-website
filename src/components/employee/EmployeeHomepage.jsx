@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import JobApplicationModal from './JobApplicationModal';
 
 const EmployeeHomepage = ({ jobs = [], applyToJob }) => {
-  const [selectedJobId, setSelectedJobId] = useState(jobs.length > 0 ? jobs[0].id : null);
+  const location = useLocation();
+  const [selectedJobId, setSelectedJobId] = useState(location.state?.selectedJobId || (jobs.length > 0 ? jobs[0].id : null));
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
@@ -176,9 +177,13 @@ const EmployeeHomepage = ({ jobs = [], applyToJob }) => {
                     <p className="text-xs font-semibold text-gray-700 mt-0.5">
                       {job.salary} {job.employerProvided && <span className="text-gray-500 font-normal">(Employer provided)</span>}
                     </p>
-                    {job.easyApply && (
+                    {job.status === 'Closed' ? (
+                      <span className="mt-2 inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-bold">
+                        Closed
+                      </span>
+                    ) : job.easyApply && (
                       <button 
-                        onClick={(e) => { e.stopPropagation(); setIsApplicationModalOpen(true); }}
+                        onClick={(e) => { e.stopPropagation(); setSelectedJobId(job.id); setIsApplicationModalOpen(true); }}
                         className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded text-xs font-bold transition-colors"
                       >
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
@@ -235,13 +240,22 @@ const EmployeeHomepage = ({ jobs = [], applyToJob }) => {
               </div>
 
               <div className="flex gap-3">
-                <button 
-                  onClick={() => setIsApplicationModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-green-700 hover:bg-green-800 text-white rounded-lg font-bold transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
-                  Apply
-                </button>
+                {selectedJob.status === 'Closed' ? (
+                  <button 
+                    disabled
+                    className="flex items-center gap-2 px-6 py-2.5 bg-gray-200 text-gray-500 rounded-lg font-bold cursor-not-allowed"
+                  >
+                    Closed
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => setIsApplicationModalOpen(true)}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-green-700 hover:bg-green-800 text-white rounded-lg font-bold transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
+                    Apply
+                  </button>
+                )}
                 <button 
                   onClick={() => toggleSaveJob(selectedJobId)}
                   className={`px-3 py-2.5 border rounded-lg transition-colors ${savedJobs.includes(selectedJobId) ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}

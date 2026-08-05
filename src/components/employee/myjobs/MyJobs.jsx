@@ -127,31 +127,48 @@ const MyJobs = ({ jobs = [] }) => {
             {savedJobs.length === 0 ? (
               <p className="text-gray-500 py-4">No saved jobs.</p>
             ) : (
-              jobs.filter(j => savedJobs.includes(j.id)).map(job => (
-                <div key={job.id} onClick={() => navigate('/employee')} className="py-6 border-b border-gray-200 flex flex-col md:flex-row md:items-start gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 rounded-xl cursor-pointer group">
-                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-600 border border-gray-200 font-bold">
-                    {job.companyInitial}
+              jobs.filter(j => savedJobs.some(id => String(id) === String(j.id))).map(job => {
+                const appliedData = appliedJobs.find(a => String(a.id) === String(job.id));
+                return (
+                  <div key={job.id} onClick={() => navigate('/employee', { state: { selectedJobId: job.id } })} className="py-6 border-b border-gray-200 flex flex-col md:flex-row md:items-start gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 rounded-xl cursor-pointer group">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-600 border border-gray-200 font-bold">
+                      {job.companyInitial}
+                    </div>
+                    
+                    <div className="flex-1">
+                      {appliedData && (
+                        <span className={`inline-block px-3 py-1 font-bold text-xs rounded-full mb-2 ${appliedData.status === 'Applied' ? 'bg-blue-100 text-blue-800' : (appliedData.status === 'Hired' || appliedData.status?.toLowerCase() === 'shortlisted' || appliedData.status === 'Viewed') ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700'}`}>
+                          {appliedData.status}
+                        </span>
+                      )}
+                      <h2 className="text-[17px] font-bold text-gray-900 group-hover:underline">{job.title}</h2>
+                      <p className="text-[15px] text-gray-800 mt-1">{job.company}</p>
+                      <p className="text-[15px] text-gray-800 mt-0.5">{job.location}, {job.details.workLocation}</p>
+                      <p className="text-[13px] text-gray-500 mt-2">Saved {appliedData ? `• Applied on ${appliedData.date}` : ''}</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 mt-4 md:mt-0">
+                      {!appliedData && (
+                        job.status === 'Closed' ? (
+                          <div className="flex items-center gap-2 bg-[#f3f2f1] text-[#4b4b4b] px-4 py-2.5 rounded-lg text-sm font-bold w-full md:w-auto">
+                            <svg className="w-5 h-5 opacity-70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                            <span>Job closed</span>
+                          </div>
+                        ) : (
+                          <button onClick={(e) => { e.stopPropagation(); setSelectedJob(job); setIsApplicationModalOpen(true); }} className="px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg transition-colors text-[15px]">
+                            Apply now
+                          </button>
+                        )
+                      )}
+                      <button className="text-gray-900 hover:text-black">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="flex-1">
-                    <h2 className="text-[17px] font-bold text-gray-900 group-hover:underline">{job.title}</h2>
-                    <p className="text-[15px] text-gray-800 mt-1">{job.company}</p>
-                    <p className="text-[15px] text-gray-800 mt-0.5">{job.details.workLocation}</p>
-                    <p className="text-[13px] text-gray-500 mt-2">Saved</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 mt-4 md:mt-0">
-                    <button onClick={(e) => { e.stopPropagation(); setSelectedJob(job); setIsApplicationModalOpen(true); }} className="px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg transition-colors text-[15px]">
-                      Apply now
-                    </button>
-                    <button className="text-gray-900 hover:text-black">
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -162,10 +179,14 @@ const MyJobs = ({ jobs = [] }) => {
               <p className="text-gray-500 py-4">You haven't applied to any jobs yet.</p>
             ) : (
               appliedJobs.map(applied => {
-                const job = jobs.find(j => j.id === applied.jobId);
+                const job = jobs.find(j => String(j.id) === String(applied.id));
                 if (!job) return null;
                 return (
-                  <div key={applied.id} className="pb-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 pt-4 rounded-xl cursor-pointer group">
+                  <div 
+                    key={applied.id} 
+                    onClick={() => navigate('/employee', { state: { selectedJobId: job.id } })}
+                    className="pb-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 hover:bg-gray-50 transition-colors -mx-4 px-4 pt-4 rounded-xl cursor-pointer group"
+                  >
                     <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
                       <div className="w-10 h-10 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center font-bold text-gray-600 overflow-hidden shadow-sm">
                         {job.companyInitial}
@@ -173,26 +194,32 @@ const MyJobs = ({ jobs = [] }) => {
                     </div>
                     
                     <div className="flex-1">
-                      <span className={`inline-block px-3 py-1 font-bold text-xs rounded-full mb-2 ${app.status === 'Applied' ? 'bg-blue-100 text-blue-800' : app.status === 'Hired' ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700'}`}>
-                        {app.status}
+                      <span className={`inline-block px-3 py-1 font-bold text-xs rounded-full mb-2 ${applied.status === 'Applied' ? 'bg-blue-100 text-blue-800' : (applied.status === 'Hired' || applied.status?.toLowerCase() === 'shortlisted' || applied.status === 'Viewed') ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700'}`}>
+                        {applied.status}
                       </span>
                       <h2 className="text-[17px] font-bold text-gray-900 group-hover:underline">{job.title}</h2>
                       <p className="text-[15px] text-gray-800 mt-1">{job.company}</p>
                       <p className="text-[15px] text-gray-800 mt-0.5">{job.location}, {job.details.workLocation}</p>
-                      <p className="text-[13px] text-gray-500 mt-1">Applied on Indeed on {app.date}</p>
+                      <p className="text-[13px] text-gray-500 mt-1">Applied on DreamJob on {applied.date}</p>
                     </div>
                     
                     <div className="flex flex-col items-end gap-3 mt-4 md:mt-0">
                       <div className="flex items-center gap-3">
-                        <button onClick={() => openStatusModal(job.id)} className="px-5 py-2 bg-white border border-blue-600 text-blue-700 font-bold rounded-xl transition-colors text-[15px] hover:bg-blue-50">
+                        <button onClick={(e) => { e.stopPropagation(); openStatusModal(job.id); }} className="px-5 py-2 bg-white border border-blue-600 text-blue-700 font-bold rounded-xl transition-colors text-[15px] hover:bg-blue-50">
                           Update status
                         </button>
-                        <button className="text-gray-900 hover:text-black p-1">
+                        <button onClick={(e) => e.stopPropagation()} className="text-gray-900 hover:text-black p-1">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                           </svg>
                         </button>
                       </div>
+                      {job.status === 'Closed' && (
+                        <div className="flex items-center gap-2 bg-[#f3f2f1] text-[#4b4b4b] px-4 py-2.5 rounded-lg text-sm font-bold w-full max-w-[300px]">
+                          <svg className="w-5 h-5 opacity-70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                          <span>Job closed</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

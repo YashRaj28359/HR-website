@@ -14,10 +14,31 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null); // 'employee' or 'employer'
   const [jobs, setJobs] = useState(dummyJobs);
-  const [candidates, setCandidates] = useState([]);
+  const [candidates, setCandidates] = useState(() => {
+    try {
+      const saved = localStorage.getItem('globalCandidates');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   const addJob = (newJob) => {
     setJobs(prev => [newJob, ...prev]);
+  };
+
+  const toggleJobStatus = (jobId) => {
+    setJobs(prevJobs => prevJobs.map(job => {
+      if (job.id === jobId) {
+        const isCurrentlyClosed = job.status === 'Closed';
+        return { 
+          ...job, 
+          status: isCurrentlyClosed ? 'Active' : 'Closed',
+          statusColor: isCurrentlyClosed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+        };
+      }
+      return job;
+    }));
   };
 
   const applyToJob = (jobId, candidateData) => {
@@ -26,27 +47,70 @@ function App() {
       job.id === jobId ? { ...job, applications: (job.applications || 0) + 1 } : job
     ));
 
-    // Add candidate to global list
-    setCandidates(prev => [...prev, {
-      id: Date.now(),
-      jobId,
-      ...candidateData,
-      status: 'New',
-      statusColor: 'bg-blue-50 text-blue-600 border border-blue-100',
-      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-    }]);
+    // Add candidate to global list or update existing candidate
+    setCandidates(prev => {
+      let updatedList;
+      const existingIdx = prev.findIndex(c => c.email === candidateData.email);
+      if (existingIdx >= 0) {
+        const updated = [...prev];
+        const existing = updated[existingIdx];
+        const newHistoryItem = candidateData.history && candidateData.history[0] ? candidateData.history[0] : { title: 'Unknown Job', status: 'Applied', color: 'bg-blue-50 text-blue-600 border border-blue-100' };
+        
+        updated[existingIdx] = {
+          ...existing,
+          apps: (existing.apps || 1) + 1,
+          date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+          status: 'New',
+          statusColor: 'bg-blue-50 text-blue-600 border border-blue-100',
+          history: [...(existing.history || []), newHistoryItem]
+        };
+        updatedList = updated;
+      } else {
+        updatedList = [...prev, {
+          id: Date.now(),
+          jobId,
+          ...candidateData,
+          status: 'New',
+          statusColor: 'bg-blue-50 text-blue-600 border border-blue-100',
+          date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+        }];
+      }
+      localStorage.setItem('globalCandidates', JSON.stringify(updatedList));
+      return updatedList;
+    });
   };
 
-  const updateCandidateStatus = (candidateId, newStatus) => {
+  const updateCandidateStatus = (candidateId, newStatus, jobTitle = null) => {
     setCandidates(prev => {
       let targetJobId = null;
       const updatedCandidates = prev.map(c => {
         if (c.id === candidateId) {
-           targetJobId = c.jobId;
            let color = 'bg-blue-50 text-blue-600 border border-blue-100';
            if (newStatus.toLowerCase() === 'shortlisted') color = 'bg-green-50 text-green-600 border border-green-100';
            else if (newStatus.toLowerCase() === 'rejected') color = 'bg-red-50 text-red-600 border border-red-100';
-           return { ...c, status: newStatus, statusColor: color };
+           else if (newStatus.toLowerCase() === 'viewed') color = 'bg-gray-100 text-gray-700 border border-gray-200';
+           
+           // Update history if jobTitle is provided, or if it's a global update (like Viewed)
+           let newHistory = c.history || [];
+           if (jobTitle) {
+             newHistory = newHistory.map(h => 
+               h.title === jobTitle ? { ...h, status: newStatus, color } : h
+             );
+           } else {
+             newHistory = newHistory.map(h => 
+               (h.status === 'New' || h.status === 'Applied' || !jobTitle) ? { ...h, status: newStatus, color } : h
+             );
+           }
+           
+           // If no jobTitle or it's the main job, update targetJobId
+           if (!jobTitle || c.jobId === jobs.find(j => j.title === jobTitle)?.id) {
+             targetJobId = c.jobId;
+           } else {
+             targetJobId = jobs.find(j => j.title === jobTitle)?.id;
+           }
+
+           // Always update top-level status when any job application is updated
+           return { ...c, status: newStatus, statusColor: color, history: newHistory };
         }
         return c;
       });
@@ -55,13 +119,14 @@ function App() {
         try {
           const applied = JSON.parse(localStorage.getItem('appliedJobs') || '[]');
           const updated = applied.map(job => 
-            job.id === targetJobId ? { ...job, status: newStatus } : job
+            String(job.id) === String(targetJobId) ? { ...job, status: newStatus } : job
           );
           localStorage.setItem('appliedJobs', JSON.stringify(updated));
         } catch (e) {
           console.error(e);
         }
       }
+      localStorage.setItem('globalCandidates', JSON.stringify(updatedCandidates));
       return updatedCandidates;
     });
   };
@@ -291,11 +356,11 @@ function App() {
           element={
             isLoggedIn && userRole === 'employer' ? (
               <EmployerDashboard 
-                onLogout={() => navigate('/')} 
                 jobs={jobs} 
                 addJob={addJob}
                 candidates={candidates}
                 updateCandidateStatus={updateCandidateStatus}
+                toggleJobStatus={toggleJobStatus}
               />
             ) : <Navigate to="/" />
           } 
