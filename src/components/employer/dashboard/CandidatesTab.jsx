@@ -510,6 +510,24 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                   </div>
                 </div>
 
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Education</h4>
+                  <div className="space-y-4 ml-2">
+                    {selectedCandidate.education?.length > 0 ? (
+                      selectedCandidate.education.map((edu, i) => (
+                        <div key={i} className="relative pl-4">
+                          <div className="absolute w-2 h-2 bg-[#29953f] rounded-full -left-[5px] top-1.5 ring-4 ring-white"></div>
+                          <h5 className="font-bold text-gray-900 text-sm">{edu.degree || 'Degree'}</h5>
+                          <p className="text-xs text-[#29953f] font-semibold mb-1">{edu.year || 'Year'}</p>
+                          <p className="text-xs text-gray-500 leading-relaxed">{edu.institution || 'Institution'}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 italic text-sm">No education details provided.</span>
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               <div className="mt-6 pt-6 border-t border-[#ECECEC] flex gap-3 shrink-0">
