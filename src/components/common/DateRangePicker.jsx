@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const DateRangePicker = ({ onRangeChange }) => {
+const DateRangePicker = ({ dateRange, onRangeChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [startDate, setStartDate] = useState(null);
@@ -9,6 +9,13 @@ const DateRangePicker = ({ onRangeChange }) => {
   
   const containerRef = useRef(null);
   
+  useEffect(() => {
+    if (dateRange && !dateRange.start && !dateRange.end) {
+      setStartDate(null);
+      setEndDate(null);
+    }
+  }, [dateRange]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
