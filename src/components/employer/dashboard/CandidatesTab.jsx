@@ -6,6 +6,9 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
   const initialJob = location.state?.jobTitle || 'All Jobs';
   const [selectedJob, setSelectedJob] = useState(initialJob);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [previewResume, setPreviewResume] = useState(null);
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [statusFilter, setStatusFilter] = useState('All');
 
   const standardJobs = ['UI/UX Designer', 'Frontend Developer', 'Content Writer', ...jobs.map(j => j.title)];
   const allJobs = ['All Jobs', ...new Set([...standardJobs, ...(initialJob !== 'All Jobs' ? [initialJob] : [])])];
@@ -102,14 +105,84 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                 <th className="px-6 py-4 font-semibold pb-4">Candidate</th>
                 <th className="px-6 py-4 font-semibold pb-4 text-center">Applications</th>
                 <th className="px-6 py-4 font-semibold pb-4 text-center">Job Title</th>
-                <th className="px-6 py-4 font-semibold pb-4">Last Applied</th>
-                <th className="px-6 py-4 font-semibold pb-4 text-center">Status</th>
+                <th className="px-6 py-4 font-semibold pb-4">
+                  <div className="flex flex-col gap-1.5 min-w-[125px]">
+                    <span>Last Applied</span>
+                    <div className="flex flex-col gap-1">
+                      <input 
+                        type="date" 
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                        className="text-[10px] font-normal border border-gray-200 rounded px-1.5 py-1 outline-none text-gray-600 bg-white focus:border-[#29953f] transition-all w-full"
+                        title="Start Date"
+                      />
+                      <input 
+                        type="date" 
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                        className="text-[10px] font-normal border border-gray-200 rounded px-1.5 py-1 outline-none text-gray-600 bg-white focus:border-[#29953f] transition-all w-full"
+                        title="End Date"
+                      />
+                    </div>
+                  </div>
+                </th>
+                <th className="px-6 py-4 font-semibold pb-4 text-center">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span>Status</span>
+                    <select 
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="text-[10px] font-normal border border-gray-200 rounded px-1.5 py-1 outline-none text-gray-600 bg-white focus:border-[#29953f] transition-all cursor-pointer"
+                    >
+                      <option value="All">All</option>
+                      <option value="New">New</option>
+                      <option value="Applied">Applied</option>
+                      <option value="Viewed">Viewed</option>
+                      <option value="Shortlisted">Shortlisted</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                  </div>
+                </th>
                 <th className="px-6 py-4 font-semibold pb-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {candidates
                 .filter(c => selectedJob === 'All Jobs' || c.history?.some(h => h.title === selectedJob))
+                .filter(c => {
+                  if (!dateRange.start && !dateRange.end) return true;
+                  try {
+                    const candDate = new Date(c.date);
+                    candDate.setHours(0,0,0,0);
+                    
+                    if (dateRange.start) {
+                      const startDate = new Date(dateRange.start);
+                      startDate.setHours(0,0,0,0);
+                      if (candDate < startDate) return false;
+                    }
+                    
+                    if (dateRange.end) {
+                      const endDate = new Date(dateRange.end);
+                      endDate.setHours(23,59,59,999);
+                      if (candDate > endDate) return false;
+                    }
+                    
+                    return true;
+                  } catch (e) {
+                    return true;
+                  }
+                })
+                .filter(c => {
+                  if (statusFilter === 'All') return true;
+                  let displayStatus = c.status;
+                  if (selectedJob !== 'All Jobs' && c.history) {
+                    const specificHistory = c.history.find(h => h.title === selectedJob);
+                    if (specificHistory) {
+                      displayStatus = specificHistory.status;
+                    }
+                  }
+                  return displayStatus && displayStatus.toLowerCase() === statusFilter.toLowerCase();
+                })
                 .map((cand, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
@@ -162,7 +235,11 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-[#29953f] hover:bg-green-50 rounded-lg transition-colors" title="Resume">
+                      <button 
+                        onClick={() => setPreviewResume(cand)}
+                        className="p-2 text-gray-400 hover:text-[#29953f] hover:bg-green-50 rounded-lg transition-colors" 
+                        title="Resume"
+                      >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       </button>
                       <button className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" title="Message">
@@ -396,8 +473,98 @@ const CandidatesTab = ({ candidates: globalCandidates = [], jobs = [], updateCan
 
       </div>
 
-    </div>
-  );
-};
-
-export default CandidatesTab;
+        {/* Resume Preview Modal */}
+        {previewResume && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50">
+                <h3 className="font-bold text-gray-900">{previewResume.name} - Resume</h3>
+                <button onClick={() => setPreviewResume(null)} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              <div className="flex-1 bg-gray-200 p-4 sm:p-8 overflow-y-auto">
+                <div className="bg-white max-w-3xl mx-auto shadow-sm min-h-full p-8 sm:p-12 font-sans text-gray-800">
+                  <div className="border-b-2 border-gray-800 pb-6 mb-6">
+                    <h1 className="text-4xl font-black text-gray-900 tracking-tight uppercase">{previewResume.name}</h1>
+                    <p className="text-gray-600 mt-2">{previewResume.email} • {previewResume.phone || '+91 98765 43210'} • {previewResume.location || 'Bangalore, India'}</p>
+                  </div>
+                  
+                  <div className="mb-8">
+                    <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wider mb-3">Professional Summary</h2>
+                    <p className="text-sm leading-relaxed text-gray-700">
+                      {previewResume.summary || "Results-driven professional with a proven track record of delivering high-quality work. Experienced in leading teams and managing complex projects from conception to completion. Adept at problem-solving and optimizing processes to achieve organizational goals."}
+                    </p>
+                  </div>
+                  
+                  <div className="mb-8">
+                    <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wider mb-3">Experience</h2>
+                    <div className="space-y-6">
+                      {previewResume.experience ? previewResume.experience.map((exp, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between items-baseline mb-1">
+                            <h3 className="font-bold text-gray-900">{exp.company}</h3>
+                            <span className="text-sm font-semibold text-gray-500">{exp.duration}</span>
+                          </div>
+                          {exp.roles && exp.roles.length > 0 ? exp.roles.map((role, r) => (
+                            <div key={r} className="mb-3">
+                              <p className="text-sm font-semibold text-gray-700 italic">{role.title}</p>
+                              <p className="text-sm text-gray-600 mt-1">{role.description || "Led key initiatives and managed cross-functional teams to deliver impactful solutions."}</p>
+                            </div>
+                          )) : (
+                            <div className="mb-3">
+                              <p className="text-sm font-semibold text-gray-700 italic">{previewResume.role || previewResume.exp || 'Professional'}</p>
+                              <p className="text-sm text-gray-600 mt-1">Successfully executed core responsibilities and exceeded performance targets.</p>
+                            </div>
+                          )}
+                        </div>
+                      )) : (
+                        <div>
+                          <div className="flex justify-between items-baseline mb-1">
+                            <h3 className="font-bold text-gray-900">Tech Solutions Inc.</h3>
+                            <span className="text-sm font-semibold text-gray-500">2020 - Present</span>
+                          </div>
+                          <p className="text-sm font-semibold text-gray-700 italic">{previewResume.exp || 'Senior Developer'}</p>
+                          <ul className="list-disc pl-5 mt-2 text-sm text-gray-700 space-y-1">
+                            <li>Spearheaded the development of a scalable architecture.</li>
+                            <li>Mentored junior team members and established best practices for code quality.</li>
+                            <li>Collaborated with product managers to define technical roadmaps.</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wider mb-3">Education</h2>
+                    <div className="space-y-4">
+                      {previewResume.education ? previewResume.education.map((edu, i) => (
+                        <div key={i} className="flex justify-between items-baseline">
+                          <div>
+                            <h3 className="font-bold text-gray-900">{edu.degree}</h3>
+                            <p className="text-sm text-gray-600">{edu.institution}</p>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-500">{edu.year}</span>
+                        </div>
+                      )) : (
+                        <div className="flex justify-between items-baseline">
+                          <div>
+                            <h3 className="font-bold text-gray-900">Bachelor's Degree</h3>
+                            <p className="text-sm text-gray-600">National Institute of Technology</p>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-500">2016 - 2020</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  export default CandidatesTab;
