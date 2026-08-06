@@ -225,32 +225,31 @@ function App() {
             )}
           </svg>
         </button>
+        {/* Mobile Menu Dropdown */}
+        <div 
+          className={`md:hidden bg-white border-b border-palette-100 absolute top-full left-0 w-full z-40 shadow-lg transition-all duration-300 ease-in-out overflow-hidden ${
+            isMobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 border-transparent'
+          }`}
+        >
+          <div className="flex flex-col p-6 gap-4">
+            <button 
+              onClick={() => { setIsMobileMenuOpen(false); setIsEmployeeLoginOpen(true); }}
+              className="w-full px-6 py-3 rounded-xl font-bold text-palette-900 bg-palette-100/50 hover:bg-palette-100 transition-colors"
+            >
+              Employee Login
+            </button>
+            <button 
+              onClick={() => { setIsMobileMenuOpen(false); setIsEmployerLoginOpen(true); }}
+              className="w-full px-6 py-3 rounded-xl font-bold bg-palette-900 text-white hover:bg-palette-800 transition-colors"
+            >
+              Employer Login
+            </button>
+          </div>
+        </div>
       </nav>
 
-      {/* Mobile Menu Dropdown */}
-      <div 
-        className={`md:hidden bg-white border-b border-palette-100 absolute top-[72px] left-0 w-full z-40 shadow-lg transition-all duration-300 ease-in-out overflow-hidden ${
-          isMobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 border-transparent'
-        }`}
-      >
-        <div className="flex flex-col p-6 gap-4">
-          <button 
-            onClick={() => { setIsMobileMenuOpen(false); setIsEmployeeLoginOpen(true); }}
-            className="w-full px-6 py-3 rounded-xl font-bold text-palette-900 bg-palette-100/50 hover:bg-palette-100 transition-colors"
-          >
-            Employee Login
-          </button>
-          <button 
-            onClick={() => { setIsMobileMenuOpen(false); setIsEmployerLoginOpen(true); }}
-            className="w-full px-6 py-3 rounded-xl font-bold bg-palette-900 text-white hover:bg-palette-800 transition-colors"
-          >
-            Employer Login
-          </button>
-        </div>
-      </div>
-
       {/* Main Body */}
-      <main className="flex-1 flex flex-col items-center p-6 relative w-full overflow-x-hidden">
+      <main className="flex-1 flex flex-col items-center p-6 relative w-full overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-palette-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
         <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-palette-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>

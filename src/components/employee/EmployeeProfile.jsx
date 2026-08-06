@@ -9,12 +9,16 @@ const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState('basic');
   const [expandedEduIndex, setExpandedEduIndex] = useState(0);
   const [expandedExpIndex, setExpandedExpIndex] = useState(-1);
+  const [expandedRoleIndex, setExpandedRoleIndex] = useState(0);
   const [skillInput, setSkillInput] = useState('');
   const [isMissingDetailsModalOpen, setIsMissingDetailsModalOpen] = useState(false);
   const [modalMissingItems, setModalMissingItems] = useState([]);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [cropFile, setCropFile] = useState(null);
   const [isEditingBasicOnMobile, setIsEditingBasicOnMobile] = useState(false);
+  const [isEditingSummaryOnMobile, setIsEditingSummaryOnMobile] = useState(false);
+  const [isEditingProfOverviewMobile, setIsEditingProfOverviewMobile] = useState(false);
+  const [isEditingSkillsMobile, setIsEditingSkillsMobile] = useState(false);
   const [formData, setFormData] = useState({
     firstName: 'Yash Raj',
     lastName: 'Singh',
@@ -275,7 +279,7 @@ const EmployeeProfile = () => {
     </div>
 
     {/* MOBILE HEADER */}
-    <div className="md:hidden flex flex-col px-4 pt-8 pb-4 bg-[#F8F9FA]">
+    <div className="md:hidden flex flex-col pt-8 pb-4">
       
       {/* 1. Avatar Section */}
       <div className="mb-5">
@@ -347,7 +351,7 @@ const EmployeeProfile = () => {
       {/* 4. Basic Details Card */}
       <div className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-[22px] font-bold text-[#111827]">Basic details</h2>
+          <h3 className="text-xl font-bold text-gray-800">Basic details</h3>
           {!isEditingBasicOnMobile && (
             <button className="text-[#6B7280] hover:text-[#2563EB] transition-colors" onClick={() => setIsEditingBasicOnMobile(true)}>
               <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,20 +388,11 @@ const EmployeeProfile = () => {
                 className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all placeholder-gray-400"
               />
             </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-1.5">Brief about yourself</label>
-              <textarea 
-                rows="3"
-                placeholder="I am a passionate professional..."
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all custom-scrollbar" 
-                value={formData.brief || ''} 
-                onChange={e => setFormData({...formData, brief: e.target.value})} 
-              ></textarea>
-            </div>
+
             <div className="pt-2">
               <button 
                 onClick={() => setIsEditingBasicOnMobile(false)}
-                className="w-full py-3 bg-[#2563EB] text-white font-bold rounded-xl shadow-md"
+                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md transition-colors"
               >
                 Save
               </button>
@@ -433,6 +428,67 @@ const EmployeeProfile = () => {
           </div>
         )}
       </div>
+
+      {/* 5. Professional Summary Card */}
+      <div className="bg-white rounded-[20px] p-6 shadow-sm border border-gray-100 mt-4">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-gray-800">Professional Summary</h3>
+          {!isEditingSummaryOnMobile && (
+            <button className="text-[#6B7280] hover:text-[#2563EB] transition-colors" onClick={() => setIsEditingSummaryOnMobile(true)}>
+              <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          )}
+        </div>
+        
+        {isEditingSummaryOnMobile ? (
+          <div className="fixed inset-0 z-[120] bg-gray-50 overflow-y-auto md:relative md:inset-auto md:z-auto md:bg-transparent md:flex md:flex-col md:space-y-4">
+            
+            {/* Mobile Header */}
+            <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-[130] shadow-sm">
+              <h2 className="text-[18px] font-bold text-gray-900">Edit Summary</h2>
+              <button onClick={() => setIsEditingSummaryOnMobile(false)} className="text-gray-900 p-2 -mr-2">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-4 pt-6 md:p-0 flex-1 flex flex-col space-y-4 md:space-y-2">
+              <textarea 
+                rows="6"
+                placeholder="I am a passionate professional..."
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all custom-scrollbar flex-1 md:flex-none" 
+                value={formData.brief || ''} 
+                onChange={e => setFormData({...formData, brief: e.target.value})} 
+              ></textarea>
+              
+              {/* Mobile Save Button */}
+              <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-[130]">
+                <button 
+                  onClick={() => setIsEditingSummaryOnMobile(false)}
+                  className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full shadow-md transition-colors text-[15px]"
+                >
+                  Save
+                </button>
+              </div>
+
+              {/* Desktop Save Button */}
+              <div className="hidden md:block pt-2">
+                <button 
+                  onClick={() => setIsEditingSummaryOnMobile(false)}
+                  className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-[15px] text-[#374151] leading-relaxed whitespace-pre-wrap">
+            {formData.brief || <span className="text-gray-400 italic">Add a brief summary about yourself...</span>}
+          </div>
+        )}
+      </div>
     </div>
     </>
   );
@@ -458,64 +514,82 @@ const EmployeeProfile = () => {
 
       {/* Avatar Upload Modal */}
       {isAvatarModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setIsAvatarModalOpen(false)}>
-          <div className="bg-white rounded-3xl p-10 w-full max-w-2xl shadow-2xl animate-slide-up relative text-center" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setIsAvatarModalOpen(false)} className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white md:bg-black/50 md:backdrop-blur-sm md:p-4 animate-fade-in" onClick={() => setIsAvatarModalOpen(false)}>
+          {/* Mobile Top Bar */}
+          <div className="md:hidden absolute top-0 left-0 right-0 p-4 z-20 flex items-center bg-white">
+             <button onClick={() => setIsAvatarModalOpen(false)} className="text-gray-900"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg></button>
+          </div>
+
+          <div className="bg-white md:rounded-3xl w-full h-full md:h-auto md:max-w-2xl shadow-none md:shadow-2xl relative text-left md:text-center pt-[70px] md:pt-10 px-5 md:px-10 pb-6 flex flex-col" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setIsAvatarModalOpen(false)} className="hidden md:block absolute top-5 right-5 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             
             {formData.avatar ? (
-              <>
-                <h3 className="text-[1.75rem] font-bold text-gray-900 mb-8 mt-4 tracking-tight">Profile photo upload</h3>
+              <div className="flex-1 flex flex-col items-center text-center">
+                <h3 className="text-2xl md:text-[1.75rem] font-bold text-gray-900 mb-8 mt-4 tracking-tight">Photo upload</h3>
                 
-                <div className="flex justify-center mb-8">
-                  <div className="w-40 h-40 rounded-full border border-gray-200 overflow-hidden shadow-sm">
+                <div className="flex justify-center mb-8 flex-1 items-center">
+                  <div className="w-48 h-48 md:w-40 md:h-40 rounded-full border border-gray-200 overflow-hidden shadow-sm">
                     <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
                   </div>
                 </div>
 
-                <label className="inline-block cursor-pointer mb-4">
-                  <span className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full transition-all shadow-md inline-block text-lg">
-                    Replace Photo
-                  </span>
-                  <input type="file" accept="image/*" className="hidden" onChange={e => {
-                    if (e.target.files[0]) {
-                      setCropFile(e.target.files[0]);
+                <div className="mt-auto w-full">
+                  <label className="block cursor-pointer w-full mb-4">
+                    <span className="w-full md:w-auto md:px-10 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-full inline-block text-[15px] md:text-lg shadow-md transition-all">
+                      Replace Photo
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" onChange={e => {
+                      if (e.target.files[0]) {
+                        setCropFile(e.target.files[0]);
+                        setIsAvatarModalOpen(false);
+                      }
+                    }} />
+                  </label>
+                  
+                  <div className="text-[15px] md:text-lg text-gray-500 mb-4">
+                    or <button onClick={() => {
+                      setFormData({...formData, avatar: ''});
                       setIsAvatarModalOpen(false);
-                    }
-                  }} />
-                </label>
-                
-                <div className="text-lg text-gray-500 mb-4">
-                  or <button onClick={() => {
-                    setFormData({...formData, avatar: ''});
-                    setIsAvatarModalOpen(false);
-                  }} className="text-green-600 font-semibold hover:underline">Delete</button>
+                    }} className="text-green-600 font-semibold hover:underline">Delete</button>
+                  </div>
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                <h3 className="text-[1.75rem] font-bold text-gray-900 mb-3 mt-4 tracking-tight">Profile photo upload</h3>
-                <p className="text-gray-600 text-lg mb-10">Profile with photo has 40% higher chances of getting noticed by recruiters.</p>
+              <div className="flex-1 flex flex-col text-left md:text-center">
+                <h3 className="text-[26px] md:text-[1.75rem] font-bold text-gray-900 mb-3 md:mt-4 tracking-tight">Photo upload</h3>
+                <p className="text-gray-900 md:text-gray-600 font-medium md:font-normal text-[15px] md:text-lg mb-4 md:mb-10 leading-snug">Profile with photo has 40% higher chances of getting noticed by recruiters</p>
                 
-                <label className="inline-block cursor-pointer">
-                  <span className="bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-10 rounded-full transition-all shadow-md inline-block text-lg">
-                    Upload photo
-                  </span>
-                  <input type="file" accept="image/*" className="hidden" onChange={e => {
-                    if (e.target.files[0]) {
-                      setCropFile(e.target.files[0]);
-                      setIsAvatarModalOpen(false);
-                    }
-                  }} />
-                </label>
-              </>
+                <div className="flex justify-center flex-1 items-center mb-8">
+                  <div className="w-[260px] h-[260px] rounded-full bg-[#EAEAF0] flex items-center justify-center shadow-inner">
+                     <svg className="w-[140px] h-[140px] text-white translate-y-8" fill="currentColor" viewBox="0 0 24 24">
+                       <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                     </svg>
+                  </div>
+                </div>
+
+                <div className="mt-auto w-full text-center">
+                  <label className="block cursor-pointer w-full mb-4">
+                    <span className="w-full md:w-auto md:px-10 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-full inline-block text-[15px] md:text-lg shadow-md transition-all">
+                      Upload Photo
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" onChange={e => {
+                      if (e.target.files[0]) {
+                        setCropFile(e.target.files[0]);
+                        setIsAvatarModalOpen(false);
+                      }
+                    }} />
+                  </label>
+
+                  <div className="text-[13px] text-gray-500 leading-relaxed mb-4">
+                    <p>Supported file formats: PNG, JPG, JPEG, GIF</p>
+                    <p>Maximum file size: up to 2MB</p>
+                    <a href="#" onClick={e => e.preventDefault()} className="text-green-600 mt-2 inline-block font-medium hover:underline">Terms of Service</a>
+                  </div>
+                </div>
+              </div>
             )}
-            
-            <div className="mt-8 text-[15px] text-[#6b7280]">
-              <p>Supported file format: png, jpg, jpeg, gif - upto 2MB</p>
-              <a href="#" onClick={e => e.preventDefault()} className="text-green-600 hover:underline mt-2 inline-block">Terms of services</a>
-            </div>
           </div>
         </div>
       )}
@@ -636,29 +710,7 @@ const EmployeeProfile = () => {
         {renderHeader()}
 
         <div className="flex flex-col md:flex-row gap-6 items-start">
-          {/* Left Sidebar */}
-          <aside className="w-full md:w-64 flex-shrink-0 sticky top-28 bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-2">
-            {tabs.map(tab => (
-              <div key={tab.id} className="flex justify-between items-center group px-2">
-                <button
-                  onClick={() => {
-                    const el = document.getElementById(tab.id);
-                    if (el) {
-                      const y = el.getBoundingClientRect().top + window.scrollY - 100;
-                      window.scrollTo({ top: y, behavior: 'smooth' });
-                    }
-                  }}
-                  className={`text-left py-2 text-sm transition-all w-full ${
-                    activeTab === tab.id 
-                      ? 'font-bold text-gray-900' 
-                      : 'font-medium text-gray-500 hover:text-gray-900'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              </div>
-            ))}
-          </aside>
+
 
           {/* Right Content Area */}
           <div className="flex-1 animate-fade-in space-y-6 min-h-[500px]">
@@ -749,12 +801,22 @@ const EmployeeProfile = () => {
                     }
                     
                     return (
-                      <div key={idx} className="p-6 border border-gray-200 rounded-xl bg-white shadow-sm relative">
-                        <button onClick={() => { removeArrayItem('qualifications', idx); setExpandedEduIndex(-1); }} className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-10">
+                      <div key={idx} className="fixed inset-0 z-[120] bg-white overflow-y-auto md:relative md:inset-auto md:z-auto md:p-6 md:border md:border-gray-200 md:rounded-xl md:shadow-sm md:flex md:flex-col">
+                        
+                        {/* Mobile Header */}
+                        <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-[130] shadow-sm">
+                          <h2 className="text-[18px] font-bold text-gray-900">{q.educationType ? 'Edit Education' : 'Add Education'}</h2>
+                          <button onClick={() => setExpandedEduIndex(-1)} className="text-gray-900 p-2 -mr-2">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+
+                        {/* Desktop Delete Button */}
+                        <button onClick={() => { removeArrayItem('qualifications', idx); setExpandedEduIndex(-1); }} className="hidden md:block absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-10">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                         
-                        <div className="space-y-6 pt-2">
+                        <div className="space-y-6 pt-6 px-4 pb-[140px] md:pt-2 md:px-0 md:pb-0 flex-1">
                           <div>
                             <label className="block text-sm font-bold text-gray-900 mb-1.5">Education <span className="text-red-500">*</span></label>
                             <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={q.educationType || ''} onChange={e => updateArray('qualifications', idx, 'educationType', e.target.value)}>
@@ -863,9 +925,26 @@ const EmployeeProfile = () => {
                               )}
                             </>
                           )}
+                          {/* Mobile Save Button */}
+                          <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-[130] flex flex-col gap-3">
+                             <button 
+                               onClick={() => { removeArrayItem('qualifications', idx); setExpandedEduIndex(-1); }}
+                               className="w-full bg-transparent border border-green-600 text-green-600 font-bold py-3 rounded-full hover:bg-green-50 transition-colors text-[15px]"
+                             >
+                               Remove Education
+                             </button>
+                             <button onClick={() => setExpandedEduIndex(-1)} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-full shadow-md transition-all text-[15px]">Save</button>
+                          </div>
                           
-                          <div className="flex justify-end mt-4">
-                            <button onClick={() => setExpandedEduIndex(-1)} className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors shadow-sm">Save</button>
+                          {/* Desktop Save Button */}
+                          <div className="hidden md:flex justify-end gap-4 mt-4">
+                            <button 
+                               onClick={() => { removeArrayItem('qualifications', idx); setExpandedEduIndex(-1); }}
+                               className="px-6 py-2 rounded-full bg-transparent border border-green-600 text-green-600 font-semibold hover:bg-green-50 transition-colors"
+                            >
+                              Remove Education
+                            </button>
+                            <button onClick={() => setExpandedEduIndex(-1)} className="px-6 py-2 rounded-full bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors shadow-sm">Save</button>
                           </div>
                         </div>
                       </div>
@@ -885,7 +964,7 @@ const EmployeeProfile = () => {
                 <div>
                   <h3 className="text-xl font-bold text-gray-800">Work Experience</h3>
                 </div>
-                <button onClick={() => { setExpandedExpIndex(formData.experience?.length || 0); addArrayItem('experience', { companyName: '', noticePeriod: '', roles: [{ jobTitle: '', employmentType: '', currentCompany: false, joiningDate: '', leavingDate: '', roleDescription: '' }] }); }} className="text-green-500 font-semibold hover:text-green-600 text-sm">
+                <button onClick={() => { setExpandedExpIndex(formData.experience?.length || 0); setExpandedRoleIndex(0); addArrayItem('experience', { companyName: '', noticePeriod: '', roles: [{ jobTitle: '', employmentType: '', currentCompany: false, joiningDate: '', leavingDate: '', roleDescription: '' }] }); }} className="text-green-500 font-semibold hover:text-green-600 text-sm">
                   Add +
                 </button>
               </div>
@@ -909,7 +988,7 @@ const EmployeeProfile = () => {
                                     <h4 className="font-bold text-gray-900 text-[15px]">
                                       {exp.companyName || 'Company Name'}
                                     </h4>
-                                    <button onClick={() => setExpandedExpIndex(cIdx)} className="text-gray-400 hover:text-blue-600 transition-colors">
+                                    <button onClick={() => { setExpandedExpIndex(cIdx); setExpandedRoleIndex(0); }} className="text-gray-400 hover:text-blue-600 transition-colors">
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                     </button>
                                   </div>
@@ -933,11 +1012,23 @@ const EmployeeProfile = () => {
                             }
                             
                             return (
-                              <div key={cIdx} className="p-4 border border-gray-200 rounded-xl space-y-4 bg-gray-50 relative">
-                                <button onClick={() => { removeArrayItem('experience', cIdx); setExpandedExpIndex(-1); }} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors z-10">
+                              <div key={cIdx} className="fixed inset-0 z-[120] bg-gray-50 overflow-y-auto md:relative md:inset-auto md:z-auto md:p-4 md:border md:border-gray-200 md:rounded-xl md:space-y-4 md:bg-gray-50 md:flex md:flex-col">
+                                
+                                {/* Mobile Header */}
+                                <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-[130] shadow-sm">
+                                  <h2 className="text-[18px] font-bold text-gray-900">{exp.companyName ? 'Edit Experience' : 'Add Experience'}</h2>
+                                  <button onClick={() => setExpandedExpIndex(-1)} className="text-gray-900 p-2 -mr-2">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                  </button>
+                                </div>
+
+                                {/* Desktop Delete Button */}
+                                <button onClick={() => { removeArrayItem('experience', cIdx); setExpandedExpIndex(-1); }} className="hidden md:block absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors z-10">
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
-                                <h4 className="font-semibold text-gray-700 pr-8">Company {cIdx + 1}</h4>
+                                
+                                <div className="space-y-4 pt-6 px-4 pb-[140px] md:pt-0 md:px-0 md:pb-0 flex-1">
+                                  <h4 className="hidden md:block font-semibold text-gray-700 pr-8">Company {cIdx + 1}</h4>
                                 <div>
                                   <label className="block text-sm font-bold text-gray-900 mb-1.5">Company Name <span className="text-red-500">*</span></label>
                                   <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={exp.companyName || ''} onChange={e => {
@@ -947,84 +1038,104 @@ const EmployeeProfile = () => {
                                   }} />
                                 </div>
                                 <div className="relative border-l-2 border-green-500 ml-3 mt-8 space-y-8 pb-4">
-                                  {(exp.roles || []).map((role, rIdx) => (
+                                  {(exp.roles || []).map((role, rIdx) => {
+                                    const isRoleExpanded = expandedRoleIndex === rIdx;
+                                    
+                                    return (
                                     <div key={rIdx} className="relative pl-6">
                                       <div className="absolute -left-[9px] top-6 w-4 h-4 rounded-full bg-green-500 border-4 border-gray-50 shadow-sm"></div>
                                       
-                                      <div className="p-6 border border-gray-200 rounded-xl space-y-6 bg-white shadow-sm relative group">
-                                        <button onClick={() => {
-                                          const newExp = [...(formData.experience || [])];
-                                          newExp[cIdx].roles.splice(rIdx, 1);
-                                          setFormData({...formData, experience: newExp});
-                                        }} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors hidden group-hover:block">
-                                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
+                                      <div className="border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden relative group">
                                         
-                                        <div className="absolute -top-3 left-4 bg-white px-3 text-sm font-bold text-green-600 border border-green-100 rounded-full shadow-sm">Role {rIdx + 1}</div>
-                                        
-                                        <div className="space-y-6 pt-2">
-                                      <div>
-                                        <label className="block text-sm font-bold text-gray-900 mb-1.5">Job Title <span className="text-red-500">*</span></label>
-                                        <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.jobTitle || ''} onChange={e => {
-                                          const newExp = [...(formData.experience || [])];
-                                          newExp[cIdx].roles[rIdx].jobTitle = e.target.value;
-                                          setFormData({...formData, experience: newExp});
-                                        }} />
-                                      </div>
-                                      <div>
-                                        <label className="block text-sm font-bold text-gray-900 mb-1.5">Employment Type <span className="text-red-500">*</span></label>
-                                        <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.employmentType || ''} onChange={e => {
-                                          const newExp = [...(formData.experience || [])];
-                                          newExp[cIdx].roles[rIdx].employmentType = e.target.value;
-                                          setFormData({...formData, experience: newExp});
-                                        }}>
-                                          <option value="">Select</option>
-                                          <option value="Full-time">Full-time</option>
-                                          <option value="Part-time">Part-time</option>
-                                          <option value="Contract">Contract</option>
-                                        </select>
-                                      </div>
-                                      <div className="flex items-center mt-6">
-                                        <input type="checkbox" id={`current-${cIdx}-${rIdx}`} className="w-5 h-5 rounded border-gray-300 text-green-500 focus:ring-green-500 mr-3" checked={role.currentCompany || false} onChange={e => {
-                                          const newExp = [...(formData.experience || [])];
-                                          newExp[cIdx].roles[rIdx].currentCompany = e.target.checked;
-                                          if (e.target.checked) newExp[cIdx].roles[rIdx].leavingDate = '';
-                                          setFormData({...formData, experience: newExp});
-                                        }} />
-                                        <label htmlFor={`current-${cIdx}-${rIdx}`} className="text-sm font-bold text-gray-900">Current role</label>
-                                      </div>
-                                      <div className="space-y-6">
-                                        <div>
-                                          <label className="block text-sm font-bold text-gray-900 mb-1.5">Joining <span className="text-red-500">*</span></label>
-                                          <input type="month" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.joiningDate || ''} onChange={e => {
-                                            const newExp = [...(formData.experience || [])];
-                                            newExp[cIdx].roles[rIdx].joiningDate = e.target.value;
-                                            setFormData({...formData, experience: newExp});
-                                          }} />
-                                        </div>
-                                        {!role.currentCompany && (
+                                        {/* Header Row (Always visible) */}
+                                        <div 
+                                          className={`p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50 transition-colors ${isRoleExpanded ? 'bg-gray-50' : ''}`}
+                                          onClick={() => setExpandedRoleIndex(isRoleExpanded ? -1 : rIdx)}
+                                        >
                                           <div>
-                                            <label className="block text-sm font-bold text-gray-900 mb-1.5">Leaving <span className="text-red-500">*</span></label>
-                                            <input type="month" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.leavingDate || ''} onChange={e => {
-                                              const newExp = [...(formData.experience || [])];
-                                              newExp[cIdx].roles[rIdx].leavingDate = e.target.value;
-                                              setFormData({...formData, experience: newExp});
-                                            }} />
+                                            <h5 className="font-bold text-gray-900">{role.jobTitle || `Role ${rIdx + 1}`}</h5>
+                                            <p className="text-sm text-gray-500 mt-1">{role.employmentType || 'Employment Type'}</p>
                                           </div>
-                                        )}
-                                      </div>
-                                      <div className="col-span-2">
-                                        <label className="block text-sm font-bold text-gray-900 mb-1.5">Role Description</label>
-                                        <textarea className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 h-24 resize-none outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.roleDescription || ''} onChange={e => {
-                                          const newExp = [...(formData.experience || [])];
-                                          newExp[cIdx].roles[rIdx].roleDescription = e.target.value;
-                                          setFormData({...formData, experience: newExp});
-                                        }} />
-                                      </div>
+                                          <svg className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isRoleExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+
+                                        {/* Animated Body */}
+                                        <div className={`grid transition-all duration-300 ease-in-out ${isRoleExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                                          <div className="overflow-hidden">
+                                            <div className="p-6 border-t border-gray-100 space-y-6 relative bg-white">
+                                              <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                const newExp = [...(formData.experience || [])];
+                                                newExp[cIdx].roles.splice(rIdx, 1);
+                                                setFormData({...formData, experience: newExp});
+                                              }} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors hidden md:block group-hover:block z-10">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                              </button>
+                                              
+                                              <div>
+                                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Job Title <span className="text-red-500">*</span></label>
+                                                <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.jobTitle || ''} onChange={e => {
+                                                  const newExp = [...(formData.experience || [])];
+                                                  newExp[cIdx].roles[rIdx].jobTitle = e.target.value;
+                                                  setFormData({...formData, experience: newExp});
+                                                }} />
+                                              </div>
+                                              <div>
+                                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Employment Type <span className="text-red-500">*</span></label>
+                                                <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.employmentType || ''} onChange={e => {
+                                                  const newExp = [...(formData.experience || [])];
+                                                  newExp[cIdx].roles[rIdx].employmentType = e.target.value;
+                                                  setFormData({...formData, experience: newExp});
+                                                }}>
+                                                  <option value="">Select</option>
+                                                  <option value="Full-time">Full-time</option>
+                                                  <option value="Part-time">Part-time</option>
+                                                  <option value="Contract">Contract</option>
+                                                </select>
+                                              </div>
+                                              <div className="flex items-center mt-6">
+                                                <input type="checkbox" id={`current-${cIdx}-${rIdx}`} className="w-5 h-5 rounded border-gray-300 text-green-500 focus:ring-green-500 mr-3" checked={role.currentCompany || false} onChange={e => {
+                                                  const newExp = [...(formData.experience || [])];
+                                                  newExp[cIdx].roles[rIdx].currentCompany = e.target.checked;
+                                                  if (e.target.checked) newExp[cIdx].roles[rIdx].leavingDate = '';
+                                                  setFormData({...formData, experience: newExp});
+                                                }} />
+                                                <label htmlFor={`current-${cIdx}-${rIdx}`} className="text-sm font-bold text-gray-900">Current role</label>
+                                              </div>
+                                              <div className="space-y-6">
+                                                <div>
+                                                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Joining <span className="text-red-500">*</span></label>
+                                                  <input type="month" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.joiningDate || ''} onChange={e => {
+                                                    const newExp = [...(formData.experience || [])];
+                                                    newExp[cIdx].roles[rIdx].joiningDate = e.target.value;
+                                                    setFormData({...formData, experience: newExp});
+                                                  }} />
+                                                </div>
+                                                {!role.currentCompany && (
+                                                  <div>
+                                                    <label className="block text-sm font-bold text-gray-900 mb-1.5">Leaving <span className="text-red-500">*</span></label>
+                                                    <input type="month" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.leavingDate || ''} onChange={e => {
+                                                      const newExp = [...(formData.experience || [])];
+                                                      newExp[cIdx].roles[rIdx].leavingDate = e.target.value;
+                                                      setFormData({...formData, experience: newExp});
+                                                    }} />
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <div className="col-span-2">
+                                                <label className="block text-sm font-bold text-gray-900 mb-1.5">Role Description</label>
+                                                <textarea className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 h-24 resize-none outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={role.roleDescription || ''} onChange={e => {
+                                                  const newExp = [...(formData.experience || [])];
+                                                  newExp[cIdx].roles[rIdx].roleDescription = e.target.value;
+                                                  setFormData({...formData, experience: newExp});
+                                                }} />
+                                              </div>
+                                            </div>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
-                                  ))}
+                                  )})}
 
                                   <div className="relative pl-6">
                                     <div className="absolute -left-[7px] top-2 w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-50"></div>
@@ -1032,6 +1143,7 @@ const EmployeeProfile = () => {
                                       const newExp = [...(formData.experience || [])];
                                       newExp[cIdx].roles.push({ jobTitle: '', employmentType: '', currentCompany: false, joiningDate: '', leavingDate: '', roleDescription: '' });
                                       setFormData({...formData, experience: newExp});
+                                      setExpandedRoleIndex(newExp[cIdx].roles.length - 1);
                                     }} className="flex items-center gap-1 text-sm font-bold text-green-600 hover:text-green-700 transition-colors">
                                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                                       Add Role
@@ -1055,8 +1167,27 @@ const EmployeeProfile = () => {
                                     </select>
                                   </div>
                                 )}
-                                <div className="flex justify-end mt-4">
-                                  <button onClick={() => setExpandedExpIndex(-1)} className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors shadow-sm">Save</button>
+                                  {/* Mobile Save Button */}
+                                  <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-[130] flex flex-col gap-3">
+                                     <button 
+                                       onClick={() => { removeArrayItem('experience', cIdx); setExpandedExpIndex(-1); }}
+                                       className="w-full bg-transparent border border-green-600 text-green-600 font-bold py-3 rounded-full hover:bg-green-50 transition-colors text-[15px]"
+                                     >
+                                       Remove Company
+                                     </button>
+                                     <button onClick={() => setExpandedExpIndex(-1)} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-full shadow-md transition-all text-[15px]">Save</button>
+                                  </div>
+                                  
+                                  {/* Desktop Save Button */}
+                                  <div className="hidden md:flex justify-end gap-4 mt-4">
+                                    <button 
+                                       onClick={() => { removeArrayItem('experience', cIdx); setExpandedExpIndex(-1); }}
+                                       className="px-6 py-2 rounded-full bg-transparent border border-green-600 text-green-600 font-semibold hover:bg-green-50 transition-colors"
+                                    >
+                                      Remove Company
+                                    </button>
+                                    <button onClick={() => setExpandedExpIndex(-1)} className="px-6 py-2 rounded-full bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors shadow-sm">Save</button>
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -1072,102 +1203,182 @@ const EmployeeProfile = () => {
                     </div>
               </section>
 
-              <section id="professional" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-              <div className="mb-6 pb-2 border-b border-gray-100">
-                <h3 className="text-xl font-bold text-gray-800">Professional Overview</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Designation <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentDesignation || ''} onChange={e => setP('currentDesignation', e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1.5">LinkedIn Profile URL <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.linkedinUrl || ''} onChange={e => setP('linkedinUrl', e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Location <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentLocation || ''} onChange={e => setP('currentLocation', e.target.value)} />
-                </div>
-                <div className="col-span-2 mt-2">
-                  <div className="mb-6 flex gap-4">
-                    <div className="flex-1">
-                      <label className="block text-xs font-bold text-gray-700 mb-1.5">Salary Type</label>
-                      <div className="relative w-full">
-                        <select 
-                          value={p.salaryType || 'Yearly'}
-                          onChange={(e) => setP('salaryType', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all appearance-none bg-white cursor-pointer"
-                        >
-                          <option value="Yearly">Yearly</option>
-                          <option value="Monthly">Monthly</option>
-                          <option value="Hourly">Hourly</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-bold text-gray-700 mb-1.5">Currency</label>
-                      <div className="relative w-full">
-                        <select 
-                          value={p.currency || 'INR'}
-                          onChange={(e) => setP('currency', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all appearance-none bg-white cursor-pointer"
-                        >
-                          <option value="INR">INR (₹)</option>
-                          <option value="USD">USD ($)</option>
-                          <option value="EUR">EUR (€)</option>
-                          <option value="GBP">GBP (£)</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                        </div>
-                      </div>
-                    </div>
+              <section id="professional" className={`scroll-mt-40 bg-white shadow-sm md:border md:border-gray-200 md:rounded-2xl md:p-8 ${isEditingProfOverviewMobile ? 'fixed inset-0 z-[120] rounded-none border-none p-0 overflow-y-auto' : 'border border-gray-100 rounded-[20px] p-6 mt-4 md:mt-0'}`}>
+                {/* Mobile Header (Read Mode) */}
+                {!isEditingProfOverviewMobile && (
+                  <div className="flex justify-between items-center md:hidden">
+                    <h3 className="text-xl font-bold text-gray-800">Professional Overview</h3>
+                    <button className="text-[#6B7280] hover:text-[#2563EB] transition-colors" onClick={() => setIsEditingProfOverviewMobile(true)}>
+                      <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
                   </div>
+                )}
 
+                {/* Mobile Header (Edit Mode) */}
+                {isEditingProfOverviewMobile && (
+                  <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-[130] shadow-sm">
+                    <h2 className="text-[18px] font-bold text-gray-900">Edit Professional Overview</h2>
+                    <button onClick={() => setIsEditingProfOverviewMobile(false)} className="text-gray-900 p-2 -mr-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* Desktop Header */}
+                <div className="hidden md:block mb-6 pb-2 border-b border-gray-100">
+                  <h3 className="text-xl font-bold text-gray-800">Professional Overview</h3>
+                </div>
+                
+                <div className={`grid-cols-1 md:grid-cols-2 gap-6 ${isEditingProfOverviewMobile ? 'grid p-4 pb-24 md:p-0' : 'hidden md:grid'}`}>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                      {p.salaryType === 'Monthly' ? 'Monthly Salary' : 'Annual Salary'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <input 
-                          type="text" 
-                          placeholder={p.salaryType === 'Monthly' ? '₹40,000' : '₹5,00,000'}
-                          value={p.currentSalary || ''}
-                          onChange={(e) => setP('currentSalary', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all placeholder:text-gray-400 font-medium"
-                        />
-                        <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-semibold uppercase tracking-wide">Current</p>
+                    <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Designation <span className="text-red-500">*</span></label>
+                    <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentDesignation || ''} onChange={e => setP('currentDesignation', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-1.5">LinkedIn Profile URL <span className="text-red-500">*</span></label>
+                    <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.linkedinUrl || ''} onChange={e => setP('linkedinUrl', e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-1.5">Current Location <span className="text-red-500">*</span></label>
+                    <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" value={p.currentLocation || ''} onChange={e => setP('currentLocation', e.target.value)} />
+                  </div>
+                  <div className="col-span-1 md:col-span-2 mt-2">
+                    <div className="mb-6 flex gap-4">
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Salary Type</label>
+                        <div className="relative w-full">
+                          <select 
+                            value={p.salaryType || 'Yearly'}
+                            onChange={(e) => setP('salaryType', e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all appearance-none bg-white cursor-pointer"
+                          >
+                            <option value="Yearly">Yearly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Hourly">Hourly</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <input 
-                          type="text" 
-                          placeholder={p.salaryType === 'Monthly' ? '₹60,000' : '₹8,00,000'}
-                          value={p.expectedSalary || ''}
-                          onChange={(e) => setP('expectedSalary', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all placeholder:text-gray-400 font-medium"
-                        />
-                        <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-semibold uppercase tracking-wide">Expected</p>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Currency</label>
+                        <div className="relative w-full">
+                          <select 
+                            value={p.currency || 'INR'}
+                            onChange={(e) => setP('currency', e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all appearance-none bg-white cursor-pointer"
+                          >
+                            <option value="INR">INR (₹)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                        {p.salaryType === 'Monthly' ? 'Monthly Salary' : 'Annual Salary'}
+                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder={p.salaryType === 'Monthly' ? '₹40,000' : '₹5,00,000'}
+                            value={p.currentSalary || ''}
+                            onChange={(e) => setP('currentSalary', e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all placeholder:text-gray-400 font-medium"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-semibold uppercase tracking-wide">Current</p>
+                        </div>
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder={p.salaryType === 'Monthly' ? '₹60,000' : '₹8,00,000'}
+                            value={p.expectedSalary || ''}
+                            onChange={(e) => setP('expectedSalary', e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#29953f] focus:ring-1 focus:ring-[#29953f]/20 transition-all placeholder:text-gray-400 font-medium"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-semibold uppercase tracking-wide">Expected</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-1.5">Skills <span className="text-red-500">*</span></label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(p.skills ? p.skills.split(',').filter(s => s.trim()) : []).map(skill => (
-                      <span key={skill} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 flex items-center gap-1 cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors" onClick={() => removeSkill(skill)} title="Click to remove">
-                        {skill} <span className="text-[10px]">✕</span>
-                      </span>
-                    ))}
+
+                {/* Mobile Save Button (Edit Mode) */}
+                {isEditingProfOverviewMobile && (
+                  <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-[130]">
+                    <button 
+                      onClick={() => setIsEditingProfOverviewMobile(false)}
+                      className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full shadow-md transition-colors text-[15px]"
+                    >
+                      Save
+                    </button>
                   </div>
-                  <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Type a skill and hit Enter" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={handleSkillKeyDown} />
+                )}
+              </section>
+
+              <section id="skills" className={`scroll-mt-40 bg-white shadow-sm md:border md:border-gray-200 md:rounded-2xl md:p-8 ${isEditingSkillsMobile ? 'fixed inset-0 z-[120] rounded-none border-none p-0 overflow-y-auto' : 'border border-gray-100 rounded-[20px] p-6 mt-4 md:mt-8'}`}>
+                {/* Mobile Header (Read Mode) */}
+                {!isEditingSkillsMobile && (
+                  <div className="flex justify-between items-center md:hidden">
+                    <h3 className="text-xl font-bold text-gray-800">Skills</h3>
+                    <button className="text-[#6B7280] hover:text-[#2563EB] transition-colors" onClick={() => setIsEditingSkillsMobile(true)}>
+                      <svg className="w-[22px] h-[22px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* Mobile Header (Edit Mode) */}
+                {isEditingSkillsMobile && (
+                  <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-[130] shadow-sm">
+                    <h2 className="text-[18px] font-bold text-gray-900">Edit Skills</h2>
+                    <button onClick={() => setIsEditingSkillsMobile(false)} className="text-gray-900 p-2 -mr-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* Desktop Header */}
+                <div className="hidden md:block mb-6 pb-2 border-b border-gray-100">
+                  <h3 className="text-xl font-bold text-gray-800">Skills</h3>
                 </div>
-              </div>
+                
+                <div className={`${isEditingSkillsMobile ? 'block p-4 pb-24 md:p-0' : 'hidden md:block'}`}>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-1.5">Add Skills <span className="text-red-500">*</span></label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {(p.skills ? p.skills.split(',').filter(s => s.trim()) : []).map(skill => (
+                        <span key={skill} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-[13px] font-bold border border-green-100 flex items-center gap-1.5 cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors shadow-sm" onClick={() => removeSkill(skill)} title="Click to remove">
+                          {skill} <span className="text-[10px] bg-green-200/50 text-green-800 rounded-full w-4 h-4 flex items-center justify-center hover:bg-red-200 hover:text-red-800 transition-colors">✕</span>
+                        </span>
+                      ))}
+                    </div>
+                    <input type="text" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Type a skill and hit Enter" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={handleSkillKeyDown} />
+                  </div>
+                </div>
+
+                {/* Mobile Save Button (Edit Mode) */}
+                {isEditingSkillsMobile && (
+                  <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-[130]">
+                    <button 
+                      onClick={() => setIsEditingSkillsMobile(false)}
+                      className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full shadow-md transition-colors text-[15px]"
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
               </section>
 
               <section id="documents" className="scroll-mt-40 bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
@@ -1212,6 +1423,16 @@ const EmployeeProfile = () => {
                     </div>
                 </div>
               </section>
+
+              {/* Mobile Sign Out Button */}
+              <div className="md:hidden mt-8 pb-24">
+                <button 
+                  onClick={() => navigate('/')} 
+                  className="w-full bg-white border border-red-500 text-red-500 font-bold py-3.5 rounded-[16px] shadow-sm hover:bg-red-50 transition-colors text-[16px]"
+                >
+                  Sign Out
+                </button>
+              </div>
 
           </div>
         </div>
